@@ -57,7 +57,9 @@ const deleteFolderRecursiveSync = (folderPath) => {
   }
 };
 
-handleSquirrelEvent();
+if (process.env.NODE_ENV !== 'test') {
+  handleSquirrelEvent();
+}
 
 const os = require('os');
 const ipcMain = require('electron').ipcMain;
@@ -259,6 +261,10 @@ ipcMain.on('open-url-window', (event, url) => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 });
+
+if (process.env.NODE_ENV === 'test') {
+  app.removeAllListeners('window-all-closed');
+}
 
 //////////////////////////// Express Server for API Access Section ////////////////////////////
 
@@ -503,15 +509,18 @@ ipcMain.handle('run-transformers', async (event, model, prompt, params) => {
 
 //////////////////////////// Yahoo Finance Section ////////////////////////////
 async function yahooChart(ticker, options) {
- return await yf.chart(ticker, options);
+  const yahooClient = await getYF();
+  return await yahooClient.chart(ticker, options);
 }
 
 async function yahooSearch(keyword, options) {
-  return await yf.search(keyword, options);
+  const yahooClient = await getYF();
+  return await yahooClient.search(keyword, options);
 }
 
 async function yahooHistorical(ticker, options) {
-  return await yf.historical(ticker, options);
+  const yahooClient = await getYF();
+  return await yahooClient.historical(ticker, options);
 }
 
 ipcMain.handle('yahoo-chart', async (event, ticker, options) => {
@@ -856,3 +865,48 @@ ipcMain.handle('sqlite-delete', async (event, args) => {
   return data;
 });
 
+module.exports = {
+  __testables: {
+    handleSquirrelEvent,
+    deleteFolderRecursiveSync,
+    getYF,
+    runMigrations,
+    getUsername,
+    createUrlWindow,
+    extractTextFromUrlWindowSilently,
+    getCertificateFingerprint,
+    refreshCertificateFingerprint,
+    getSecret,
+    setSecret,
+    getPipeline,
+    yahooChart,
+    yahooSearch,
+    yahooHistorical,
+    getAppPath,
+    getAssetPath,
+    saveConfig,
+    hasConfig,
+    loadConfig,
+    readFromFile,
+    readFromFileBinary,
+    selectFromDatabase,
+    sqliteQuery,
+    sqliteGet,
+    sqliteRun,
+    sqliteExists,
+    initDatabase,
+    getDB,
+    __setDbForTests(value) {
+      db = value;
+    },
+    __setBetterDbForTests(value) {
+      betterDb = value;
+    },
+    __setYFForTests(value) {
+      yf = value;
+    },
+    __resetPipelineForTests() {
+      localModel = null;
+    }
+  }
+};
