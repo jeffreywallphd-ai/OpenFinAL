@@ -17,7 +17,6 @@ export class LanguageModelInteractor implements IInputBoundary {
     }
 
     async post(requestModel: IRequestModel): Promise<IResponseModel> {
-        results = {};
         const configUpdater = new ConfigUpdater();
         const config = await configUpdater.getConfig();
 
