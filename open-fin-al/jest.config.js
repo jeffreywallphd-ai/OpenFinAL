@@ -11,6 +11,7 @@ module.exports = {
     '\\.(css|less|scss|sass)$': '<rootDir>/src/tests/__mocks__/styleMock.js',
     '\\.(jpg|jpeg|png|gif|svg|webp)$': 'jest-transform-stub',
     '@xenova/transformers': '<rootDir>/src/tests/__mocks__/transformers.js',
+    'pptx-preview': '<rootDir>/src/tests/__mocks__/pptxPreview.js',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(@xenova/transformers)/)'
