@@ -1,6 +1,7 @@
 import {IEntity} from "../../../Entity/IEntity";
 import { StockRequest } from "../../../Entity/StockRequest";
 import { IKeylessDataGateway } from "../IKeylessDataGateway";
+import { StockPriceVolumeDataFrame } from "../../../Entity/StockPriceVolumeDataFrame";
 
 // allow the yahoo.finance contextBridge to be used in TypeScript
 declare global {
@@ -85,6 +86,7 @@ export class YFinanceStockGateway implements IKeylessDataGateway {
     }
 
     entity.setFieldValue("data", formattedData);
+    entity.setFieldValue("dataFrame", StockPriceVolumeDataFrame.fromRows(formattedData));
     array.push(entity);
 
     return array;

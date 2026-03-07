@@ -3,6 +3,7 @@ import {IEntity} from "../../../Entity/IEntity";
 import {IKeyedDataGateway} from "../IKeyedDataGateway";
 import { APIEndpoint } from "../../../Entity/APIEndpoint";
 import { JSONRequest } from "../../Request/JSONRequest";
+import { StockPriceVolumeDataFrame } from "../../../Entity/StockPriceVolumeDataFrame";
 
 export class AlphaVantageStockGateway implements IKeyedDataGateway {
     baseURL: string = "https://www.alphavantage.co/query";
@@ -191,7 +192,9 @@ export class AlphaVantageStockGateway implements IKeyedDataGateway {
             }
         }
 
-        entity.setFieldValue("data", formattedData.reverse());
+        const rows = formattedData.reverse();
+        entity.setFieldValue("data", rows);
+        entity.setFieldValue("dataFrame", StockPriceVolumeDataFrame.fromRows(rows));
 
         array.push(entity);
 

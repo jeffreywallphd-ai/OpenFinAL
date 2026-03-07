@@ -1,6 +1,7 @@
 import { StockRequest } from "../../../Entity/StockRequest";
 import { IEntity } from "../../../Entity/IEntity";
 import { IKeyedDataGateway } from "../IKeyedDataGateway";
+import { StockPriceVolumeDataFrame } from "../../../Entity/StockPriceVolumeDataFrame";
 
 export class FinancialModelingPrepGateway implements IKeyedDataGateway {
   baseURL: string = "https://financialmodelingprep.com/api/v3/";
@@ -117,7 +118,9 @@ export class FinancialModelingPrepGateway implements IKeyedDataGateway {
       });
     }
 
-    entity.setFieldValue("data", formattedData.reverse());
+    const rows = formattedData.reverse();
+    entity.setFieldValue("data", rows);
+    entity.setFieldValue("dataFrame", StockPriceVolumeDataFrame.fromRows(rows));
     array.push(entity);
 
     return array;

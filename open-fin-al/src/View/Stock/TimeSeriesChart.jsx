@@ -234,7 +234,7 @@ function TimeSeriesChart(props) {
     
     if(props.state.data) {
         header = `${props.state.data.response.results[0]["companyName"]} (${props.state.data.response.results[0]["ticker"]})`;
-        data = props.state.data.response.results[0]["data"];
+        data = props.state.data.response.results[0]["dataFrame"]?.rows || props.state.data.response.results[0]["data"];
 
         if((props.state.priceMax - props.state.priceMin) > 1.5) {
             //round to nearest dollar when difference between max and min price is in dollars
