@@ -2,6 +2,7 @@ import {IEntity} from "./IEntity";
 import {Field} from "./Field";
 import {IRequestModel} from "../Gateway/Request/IRequestModel";
 import {IResponseModel} from "../Gateway/Response/IResponseModel";
+import { StockPriceVolumeDataFrame } from "./StockPriceVolumeDataFrame";
 
 export class StockRequest implements IEntity {
     fields: Map<string,Field> = new Map();
@@ -39,6 +40,9 @@ export class StockRequest implements IEntity {
 
         var data = new Field("data", "array", null);
         this.fields.set("data", data);
+
+        var dataFrame = new Field("dataFrame", "object", null);
+        this.fields.set("dataFrame", dataFrame);
 
         var key = new Field("key", "string", null);
         this.fields.set("key", key);
@@ -90,6 +94,10 @@ export class StockRequest implements IEntity {
         
         if(json.request.stock.hasOwnProperty("endDate")) {
             this.setFieldValue("endDate", json.request.stock.endDate);
+        }
+
+        if(json.request.stock.hasOwnProperty("dataFrame")) {
+            this.setFieldValue("dataFrame", StockPriceVolumeDataFrame.fromRows(json.request.stock.dataFrame.rows || []));
         }
     }
 

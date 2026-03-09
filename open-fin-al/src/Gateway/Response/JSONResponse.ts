@@ -25,7 +25,12 @@ export class JSONResponse implements IResponseModel {
                         continue;
                     } 
 
-                    result[obj.name] = obj.value;
+                    const fieldValue = obj.value as any;
+                    if(fieldValue && typeof fieldValue.toJSON === "function") {
+                        result[obj.name] = fieldValue.toJSON();
+                    } else {
+                        result[obj.name] = fieldValue;
+                    }
                 }
 
                 resultsArray.push(result);
