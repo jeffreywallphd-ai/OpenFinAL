@@ -8,6 +8,7 @@ import React, { Component } from 'react';
 import profileIcon from "../Asset/Image/profile.jpg";
 import { NewsInteractor } from "../Interactor/NewsInteractor";
 import { JSONRequest } from "../Gateway/Request/JSONRequest";
+import { createStockQuoteRequestModel } from "../Gateway/Transport/StockTransport";
 import { NewsBrowser } from "./News/Browser";
 import {PortfolioTransactionInteractor} from "../Interactor/PortfolioTransactionInteractor";
 import { StockInteractor } from "../Interactor/StockInteractor";
@@ -251,14 +252,7 @@ class Home extends Component {
 
               if(asset.type==="Stock") {
                   const interactor = new StockInteractor();
-                  const quoteRequestObj = new JSONRequest(JSON.stringify({
-                      request: {
-                          stock: {
-                              action: "quote",
-                              ticker: asset["symbol"]
-                          }
-                      }
-                  }));
+                  const quoteRequestObj = createStockQuoteRequestModel(asset["symbol"]);
               
                   const quoteResponse = await interactor.get(quoteRequestObj);
 

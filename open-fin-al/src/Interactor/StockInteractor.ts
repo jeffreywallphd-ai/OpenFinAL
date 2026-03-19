@@ -1,10 +1,22 @@
-import { StockRequest } from '../Entity/StockRequest';
+import {
+  mapLegacyStockRequestToEntity,
+  mapLookupEntitiesToOutputDto,
+  mapLookupInputDtoToEntity,
+  mapQuoteEntitiesToOutputDto,
+  mapQuoteInputDtoToEntity,
+} from '../application/stock/StockMappers';
 import { IDataGateway } from '../Gateway/Data/IDataGateway';
 import { StockGatewayFactory } from '../Gateway/Data/StockGatewayFactory';
 import { StockQuoteGatewayFactory } from '../Gateway/Data/StockQuoteGatewayFactory';
 import { SQLiteAssetGateway } from '../Gateway/Data/SQLite/SQLiteAssetGateway';
 import { IRequestModel } from '../Gateway/Request/IRequestModel';
-import { JSONResponse } from '../Gateway/Response/JSONResponse';
+import {
+  mapTransportToLookupInputDto,
+  mapTransportToQuoteInputDto,
+  parseStockTransportModel,
+  serializeLookupOutputDto,
+  serializeQuoteOutputDto,
+} from '../Gateway/Transport/StockTransport';
 import { IResponseModel } from '../Gateway/Response/IResponseModel';
 import { IConfigService } from '../application/services/IConfigService';
 import { ElectronConfigService } from '../infrastructure/electron/ElectronConfigService';
@@ -39,21 +51,65 @@ export class StockInteractor implements IInputBoundary {
   }
 
   async get(requestModel: IRequestModel): Promise<IResponseModel> {
-    let response;
+    const transportModel = parseStockTransportModel(requestModel);
+    const action = transportModel.request.stock.action;
+
+    if (action === 'lookup') {
+      return this.lookup(transportModel);
+    }
+
+    if (action === 'quote') {
+      return this.quote(transportModel);
+    }
+
+    return this.readLegacyStockAction(transportModel);
+  }
+
+  async put(requestModel: IRequestModel): Promise<IResponseModel> {
+    return this.get(requestModel);
+  }
+
+  async delete(requestModel: IRequestModel): Promise<IResponseModel> {
+    return this.get(requestModel);
+  }
+
+  private async lookup(transportModel: ReturnType<typeof parseStockTransportModel>): Promise<IResponseModel> {
+    const inputDto = mapTransportToLookupInputDto(transportModel);
+    const entity = mapLookupInputDtoToEntity(inputDto);
+    const gateway = new SQLiteAssetGateway();
+    const results = await gateway.read(entity, 'lookup');
+
+    return serializeLookupOutputDto(mapLookupEntitiesToOutputDto(results ?? []), gateway.sourceName) as unknown as unknown as IResponseModel;
+  }
+
+  private async quote(transportModel: ReturnType<typeof parseStockTransportModel>): Promise<IResponseModel> {
+    const config = await this.configService.load();
+    const inputDto = mapTransportToQuoteInputDto(transportModel);
+    const entity = mapQuoteInputDtoToEntity(inputDto);
+    const gateway = await this.stockQuoteGatewayFactory.createGateway(config);
+
+    if ('key' in gateway && gateway.key) {
+      entity.setFieldValue('key', gateway.key);
+    }
+
+    const results = await gateway.read(entity, 'quote');
+
+    if (!results) {
+      return this.noDataResponse();
+    }
+
+    return serializeQuoteOutputDto(mapQuoteEntitiesToOutputDto(results), gateway.sourceName) as unknown as unknown as IResponseModel;
+  }
+
+  private async readLegacyStockAction(transportModel: ReturnType<typeof parseStockTransportModel>): Promise<IResponseModel> {
+    const action = transportModel.request.stock.action;
     const date = new Date();
     const config = await this.configService.load();
-
-    const stock = new StockRequest();
-    stock.fillWithRequest(requestModel);
+    const stock = mapLegacyStockRequestToEntity(transportModel.request.stock);
 
     let stockGateway: IDataGateway;
 
-    if (requestModel.request.request.stock.action === 'quote') {
-      stockGateway = await this.stockQuoteGatewayFactory.createGateway(config);
-      stock.setFieldValue('key', stockGateway.key);
-    }
-
-    if (requestModel.request.request.stock.action === 'downloadPublicCompanies') {
+    if (action === 'downloadPublicCompanies') {
       try {
         stockGateway = new SQLiteAssetGateway();
         const lastUpdated = await stockGateway.checkLastTableUpdate();
@@ -68,59 +124,65 @@ export class StockInteractor implements IInputBoundary {
         if (lastUpdated === undefined || dayDiff > 30) {
           const refreshed = await stockGateway.refreshTableCache(stock);
           if (refreshed) {
-            response = new JSONResponse(JSON.stringify({ status: 200, ok: true }));
-          } else {
-            response = new JSONResponse(
-              JSON.stringify({
-                status: 500,
-                data: {
-                  error: 'The cache failed to update.',
-                },
-              }),
-            );
+            return { status: 200, ok: true } as unknown as IResponseModel;
           }
 
-          return response;
+          return {
+            status: 500,
+            data: {
+              error: 'The cache failed to update.',
+            },
+          } as unknown as IResponseModel;
         }
 
-        response = new JSONResponse(JSON.stringify({ status: 200, ok: true }));
-        return response;
+        return { status: 200, ok: true } as unknown as IResponseModel;
       } catch (_downloadError) {
-        response = new JSONResponse(
-          JSON.stringify({
-            status: 500,
-            data: { error: 'An unknown error occured while updated the system cache.' },
-          }),
-        );
-        return response;
+        return {
+          status: 500,
+          data: { error: 'An unknown error occured while updated the system cache.' },
+        } as unknown as IResponseModel;
       }
     }
 
-    if (requestModel.request.request.stock.action === 'lookup' || requestModel.request.request.stock.action === 'selectRandomSP500') {
+    if (action === 'selectRandomSP500') {
       stockGateway = new SQLiteAssetGateway();
     } else {
       stockGateway = await this.stockGatewayFactory.createGateway(config);
-      stock.setFieldValue('key', stockGateway.key);
+      if ('key' in stockGateway && stockGateway.key) {
+        stock.setFieldValue('key', stockGateway.key);
+      }
     }
 
-    const results = await stockGateway.read(stock, requestModel.request.request.stock.action);
+    const results = await stockGateway.read(stock, action);
 
     if (results) {
-      response = new JSONResponse();
-      response.convertFromEntity(results, false);
-      response.response['source'] = stockGateway.sourceName;
-    } else {
-      response = new JSONResponse(JSON.stringify({ status: 400, data: { error: 'No data is available for this stock.' } }));
+      return {
+        response: {
+          ok: true,
+          status: 200,
+          results: results.map((entity) => {
+            const result: Record<string, any> = {};
+            for (const [name, obj] of entity.getFields()) {
+              if (obj.value !== null) {
+                result[name] = obj.value;
+              }
+            }
+            return result;
+          }),
+        },
+        source: stockGateway.sourceName,
+      } as unknown as IResponseModel;
     }
 
-    return response.response;
+    return this.noDataResponse();
   }
 
-  async put(requestModel: IRequestModel): Promise<IResponseModel> {
-    return this.get(requestModel);
-  }
-
-  async delete(requestModel: IRequestModel): Promise<IResponseModel> {
-    return this.get(requestModel);
+  private noDataResponse(): IResponseModel {
+    return {
+      status: 400,
+      data: {
+        error: 'No data is available for this stock.',
+      },
+    } as unknown as IResponseModel;
   }
 }
