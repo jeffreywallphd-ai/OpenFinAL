@@ -1,3 +1,5 @@
+const { validatePeerCertificate } = require('./outbound/certificateValidation');
+
 function buildAxiosRequestConfig(request) {
   const baseConfig = request.headers ? { headers: request.headers } : undefined;
 
@@ -28,42 +30,15 @@ function buildAxiosRequestConfig(request) {
 
 function createProxyServer({ express, cors, axios, certificateService, logger = console, port = 3001 }) {
   let server;
-
-  function validatePeerCertificate(response, storedFingerprint) {
-    const cert = response.request.socket?.getPeerCertificate();
-
-    if (!cert) {
-      return {
-        ok: false,
-        status: 403,
-        body: {
-          error: {
-            code: 'FORBIDDEN',
-            message: 'Access to the requested resource is forbidden. Unable to retrieve the SSL/TLS certificate for validation.',
-          },
-        },
-      };
-    }
-
-    const fingerprint = require('crypto').createHash('sha256').update(cert.raw).digest('hex');
-
-    if (storedFingerprint !== fingerprint) {
-      return {
-        ok: false,
-        status: 403,
-        body: {
-          error: {
-            code: 'FORBIDDEN',
-            message: 'Access to the requested resource is forbidden. The retrieve SSL/TLS certificate does not appear to be valid.',
-          },
-        },
-      };
-    }
-
-    return { ok: true };
-  }
+  let hasLoggedDeprecation = false;
 
   async function handleProxyRequest(req, res) {
+    if (!hasLoggedDeprecation) {
+      logger.warn?.('Deprecated generic /proxy route used. Migrate callers to provider-oriented outbound adapters.');
+      hasLoggedDeprecation = true;
+    }
+
+    res.setHeader('Warning', '299 - "Deprecated generic /proxy route; migrate to provider adapters."');
     const targetUrl = req.query.url;
 
     if (!targetUrl) {
