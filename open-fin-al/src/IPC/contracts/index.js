@@ -202,6 +202,37 @@ const ipcContracts = Object.freeze({
       },
     }),
   }),
+  outbound: Object.freeze({
+    alphaVantage: Object.freeze({
+      marketStatus: createContract({
+        channel: IPC_CHANNELS.outbound.alphaVantage.marketStatus,
+        serialize: (apiKey) => ({ apiKey }),
+        validate: (payload) => ({
+          apiKey: assertString(assertRecord(payload, 'alphaVantageMarketStatusRequest').apiKey, 'alphaVantageMarketStatusRequest.apiKey'),
+        }),
+      }),
+    }),
+    sec: Object.freeze({
+      fetchJson: createContract({
+        channel: IPC_CHANNELS.outbound.sec.fetchJson,
+        serialize: (url, headers) => ({ url, headers }),
+        validate: (payload) => {
+          const data = assertRecord(payload, 'secFetchJsonRequest');
+          return {
+            url: assertString(data.url, 'secFetchJsonRequest.url'),
+            headers: assertOptionalRecord(data.headers, 'secFetchJsonRequest.headers'),
+          };
+        },
+      }),
+      companyTickers: createContract({
+        channel: IPC_CHANNELS.outbound.sec.companyTickers,
+        serialize: (headers) => ({ headers }),
+        validate: (payload) => ({
+          headers: assertOptionalRecord(assertRecord(payload, 'secCompanyTickersRequest').headers, 'secCompanyTickersRequest.headers'),
+        }),
+      }),
+    }),
+  }),
   transformers: Object.freeze({
     runTextGeneration: createContract({
       channel: IPC_CHANNELS.transformers.runTextGeneration,

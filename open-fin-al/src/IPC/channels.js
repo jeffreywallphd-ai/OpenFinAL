@@ -31,6 +31,15 @@ const IPC_CHANNELS = Object.freeze({
     search: 'yahoo-search',
     historical: 'yahoo-historical',
   }),
+  outbound: Object.freeze({
+    alphaVantage: Object.freeze({
+      marketStatus: 'outbound:alphavantage:market-status',
+    }),
+    sec: Object.freeze({
+      fetchJson: 'outbound:sec:fetch-json',
+      companyTickers: 'outbound:sec:company-tickers',
+    }),
+  }),
   transformers: Object.freeze({
     runTextGeneration: 'run-transformers',
   }),

@@ -228,25 +228,9 @@ export class SQLiteAssetGateway implements ISqlDataGateway {
         try {
             const userEmail = await window.vault.getSecret("Email");
 
-            var endpointRequest = new JSONRequest(JSON.stringify({
-                request: {
-                    endpoint: {
-                        method: "GET",
-                        protocol: "https",
-                        hostname: "www.sec.gov",
-                        pathname: "files/company_tickers.json",
-                        headers: {
-                            "User-Agent": `Investor ${userEmail}`
-                        },               
-                    }
-                }
-            }));
-            
-            var endpoint = new APIEndpoint();
-            endpoint.fillWithRequest(endpointRequest);
-
-            //pass custom user-agent header through url query to avoid it being overriden
-            const secData = await window.exApi.fetch(`https://www.sec.gov/files/company_tickers.json`, endpoint.toObject());
+            const secData = await window.outbound.sec.companyTickers({
+                "User-Agent": `Investor ${userEmail}`
+            });
             
             // Parse the SEC JSON file to extract ticker, CIK, and companyName
             for(var key in secData) {
@@ -275,7 +259,7 @@ export class SQLiteAssetGateway implements ISqlDataGateway {
             } 
 
             //update the S&P500 status of stock assets
-            endpointRequest = new JSONRequest(JSON.stringify({
+            var endpointRequest = new JSONRequest(JSON.stringify({
                 request: {
                     endpoint: {
                         method: "GET",
@@ -289,7 +273,7 @@ export class SQLiteAssetGateway implements ISqlDataGateway {
                 }
             }));
             
-            endpoint = new APIEndpoint();
+            var endpoint = new APIEndpoint();
             endpoint.fillWithRequest(endpointRequest);
 
             // get the S&P 500 companies and store those in a database

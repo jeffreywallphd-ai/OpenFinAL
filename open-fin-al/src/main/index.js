@@ -19,6 +19,7 @@ const { registerVaultHandlers } = require('./ipc/registerVaultHandlers');
 const { registerFileHandlers } = require('./ipc/registerFileHandlers');
 const { registerDatabaseHandlers } = require('./ipc/registerDatabaseHandlers');
 const { registerYahooHandlers } = require('./ipc/registerYahooHandlers');
+const { registerOutboundHandlers } = require('./ipc/registerOutboundHandlers');
 const { registerTransformersHandlers } = require('./ipc/registerTransformersHandlers');
 const { registerPuppeteerHandlers } = require('./ipc/registerPuppeteerHandlers');
 const { registerWindowHandlers } = require('./ipc/registerWindowHandlers');
@@ -29,6 +30,7 @@ const { createFileService } = require('./services/fileService');
 const { createDatabaseService } = require('./services/databaseService');
 const { createTransformersService } = require('./services/transformersService');
 const { createYahooFinanceService } = require('./services/yahooFinanceService');
+const { createOutboundServices } = require('./services/outbound/createOutboundServices');
 const { createSecretService } = require('./services/secretService');
 const { createPuppeteerService } = require('./services/puppeteerService');
 
@@ -121,6 +123,10 @@ function bootstrapMainProcess() {
   });
   const transformersService = createTransformersService({ pipeline, env });
   const yahooFinanceService = createYahooFinanceService({ getYF });
+  const outboundServices = createOutboundServices({
+    axios,
+    certificateService,
+  });
   const puppeteerService = createPuppeteerService({ puppeteer });
   const proxyServer = createProxyServer({
     express,
@@ -134,6 +140,7 @@ function bootstrapMainProcess() {
   registerFileHandlers({ ipcMain, fileService });
   registerDatabaseHandlers({ ipcMain, databaseService });
   registerYahooHandlers({ ipcMain, yahooFinanceService });
+  registerOutboundHandlers({ ipcMain, outboundServices });
   registerTransformersHandlers({ ipcMain, transformersService });
   registerPuppeteerHandlers({ ipcMain, puppeteerService });
 

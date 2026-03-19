@@ -5,6 +5,7 @@ import type {
   ElectronAppBridge,
   ExApiBridge,
   FileBridge,
+  OutboundBridge,
   PuppeteerBridge,
   TransformersBridge,
   UrlWindowBridge,
@@ -26,6 +27,7 @@ declare global {
     electronApp: ElectronAppBridge;
     exApi: ExApiBridge;
     file: FileBridge;
+    outbound: OutboundBridge;
     puppetApi: PuppeteerBridge;
     transformers: TransformersBridge;
     urlWindow: UrlWindowBridge;

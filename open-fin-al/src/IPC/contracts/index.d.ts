@@ -38,6 +38,19 @@ export interface YahooHistoricalRequest {
   options?: Record<string, unknown>;
 }
 
+export interface AlphaVantageMarketStatusRequest {
+  apiKey: string;
+}
+
+export interface SecFetchJsonRequest {
+  url: string;
+  headers?: Record<string, unknown>;
+}
+
+export interface SecCompanyTickersRequest {
+  headers?: Record<string, unknown>;
+}
+
 export interface TransformersRunTextGenerationRequest {
   model: string;
   prompt: string;
@@ -71,6 +84,20 @@ export interface FileBridge {
 
 export interface ExApiBridge {
   fetch(url: string, params?: Record<string, unknown>): Awaitable<any>;
+}
+
+export interface OutboundAlphaVantageBridge {
+  marketStatus(apiKey: string): Awaitable<any>;
+}
+
+export interface OutboundSecBridge {
+  fetchJson(url: string, headers?: Record<string, unknown>): Awaitable<any>;
+  companyTickers(headers?: Record<string, unknown>): Awaitable<any>;
+}
+
+export interface OutboundBridge {
+  alphaVantage: OutboundAlphaVantageBridge;
+  sec: OutboundSecBridge;
 }
 
 export interface VaultBridge {

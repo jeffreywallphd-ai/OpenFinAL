@@ -1,7 +1,5 @@
-import { JSONRequest } from "../../Request/JSONRequest";
 import {IEntity} from "../../../Entity/IEntity";
 import {IKeylessDataGateway} from "../IKeylessDataGateway";
-import { APIEndpoint } from "../../../Entity/APIEndpoint";
 
 export class SecAPIGateway implements IKeylessDataGateway {
     baseURL: string = "https://data.sec.gov/";
@@ -43,28 +41,9 @@ export class SecAPIGateway implements IKeylessDataGateway {
         //request data from API
         const userEmail = await window.vault.getSecret("Email");
         
-        const urlObject = new URL(url);
-
-        var endpointRequest = new JSONRequest(JSON.stringify({
-            request: {
-                endpoint: {
-                    method: "GET",
-                    protocol: "https",
-                    hostname: "data.sec.gov",
-                    pathname: urlObject.pathname ? urlObject.pathname : null,
-                    search: urlObject.search ? urlObject.search : null,
-                    searchParams: urlObject.searchParams ? urlObject.searchParams : null,
-                    headers: {
-                        "User-Agent": `Investor ${userEmail}`
-                    },               
-                }
-            }
-        }));
-
-        var endpoint = new APIEndpoint();
-        endpoint.fillWithRequest(endpointRequest);
-
-        const data = await window.exApi.fetch(url, endpoint.toObject());   
+        const data = await window.outbound.sec.fetchJson(url, {
+            "User-Agent": `Investor ${userEmail}`
+        });
         entity.setFieldValue("data", data);
 
         const entities = [entity];

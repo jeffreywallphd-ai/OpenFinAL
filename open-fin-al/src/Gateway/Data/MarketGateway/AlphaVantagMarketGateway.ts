@@ -1,7 +1,5 @@
-import { JSONRequest } from "../../Request/JSONRequest";
 import {IEntity} from "../../../Entity/IEntity";
 import {IKeyedDataGateway} from "../IKeyedDataGateway";
-import { APIEndpoint } from "../../../Entity/APIEndpoint";
 import { MarketStatus } from "../../../Entity/MarketStatus";
 
 export class AlphaVantageMarketGateway implements IKeyedDataGateway {
@@ -29,33 +27,15 @@ export class AlphaVantageMarketGateway implements IKeyedDataGateway {
     }
 
     async read(entity: IEntity, action: string): Promise<Array<IEntity>> { 
-        var url = `${this.baseURL}?function=MARKET_STATUS&apikey=${entity.getFieldValue("key")}`;
-        const urlObject = new URL(url);
-        
-        var endpointRequest = new JSONRequest(JSON.stringify({
-            request: {
-                endpoint: {
-                    method: "GET",
-                    protocol: "https",
-                    hostname: urlObject.hostname ? urlObject.hostname : null,
-                    pathname: urlObject.pathname ? urlObject.pathname : null,
-                    search: urlObject.search ? urlObject.search : null,
-                    searchParams: urlObject.searchParams ? urlObject.searchParams : null,           
-                }
-            }
-        }));
-        
-        var endpoint = new APIEndpoint();
-        endpoint.fillWithRequest(endpointRequest);
-
-        const data = await window.exApi.fetch(this.baseURL, endpoint.toObject());
+        const data = await window.outbound.alphaVantage.marketStatus(entity.getFieldValue("key"));
+        let entities: Array<IEntity> = [];
 
         if("Information" in data) {
             window.console.log("Your AlphaVantage key has reached its daily limit");
             return entities;
         }
 
-        var entities = this.formatDataResponse(data);
+        entities = this.formatDataResponse(data);
         window.console.log(entities);
         return entities;
     }

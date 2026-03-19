@@ -48,6 +48,16 @@ contextBridge.exposeInMainWorld('exApi', {
   },
 });
 
+contextBridge.exposeInMainWorld('outbound', {
+  alphaVantage: {
+    marketStatus: (apiKey) => invokeContract(ipcRenderer, ipcContracts.outbound.alphaVantage.marketStatus, apiKey),
+  },
+  sec: {
+    fetchJson: (url, headers) => invokeContract(ipcRenderer, ipcContracts.outbound.sec.fetchJson, url, headers),
+    companyTickers: (headers) => invokeContract(ipcRenderer, ipcContracts.outbound.sec.companyTickers, headers),
+  },
+});
+
 contextBridge.exposeInMainWorld('vault', {
   getSecret: (key) => invokeContract(ipcRenderer, ipcContracts.vault.getSecret, key),
   setSecret: (key, value) => invokeContract(ipcRenderer, ipcContracts.vault.setSecret, key, value),
