@@ -8,7 +8,6 @@ const cors = require('cors');
 const express = require('express');
 const puppeteer = require('puppeteer');
 const keytar = require('keytar');
-const sqlite3 = require('sqlite3').verbose();
 const Database = require('better-sqlite3');
 const { pipeline, env } = require('@xenova/transformers');
 const { app, BrowserWindow, shell, session, ipcMain } = require('electron');
@@ -114,7 +113,6 @@ function bootstrapMainProcess() {
   const secretService = createSecretService({ keytar });
   const fileService = createFileService({ fs });
   const databaseService = createDatabaseService({
-    sqlite3,
     fs,
     path,
     app,
@@ -189,6 +187,11 @@ function bootstrapMainProcess() {
         });
       }
     });
+  });
+
+  app.on('before-quit', () => {
+    databaseService.closeConnection();
+    proxyServer.stop?.();
   });
 
   app.on('window-all-closed', () => {

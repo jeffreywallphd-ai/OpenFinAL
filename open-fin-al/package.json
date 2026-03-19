@@ -90,7 +90,6 @@
     "react-router-dom": "^7.5.0",
     "react-tiny-popover": "^8.1.6",
     "recharts": "^2.15.2",
-    "sqlite3": "^5.1.7",
     "stream-http": "^3.2.0",
     "tls": "^0.0.1",
     "ts-loader": "^9.5.2",

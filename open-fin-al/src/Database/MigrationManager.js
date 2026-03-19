@@ -1,87 +1,92 @@
-const Database = require('better-sqlite3');
 const { readFileSync, readdirSync } = require('fs');
 const { join } = require('path');
 
 class MigrationManager {
-    constructor(db, migrationsPath) {
-        this.db = db;
-        this.migrationsPath = migrationsPath;
-        this.initializeMigrationsTable();
-    }
+  constructor(db, migrationsPath, { logger = console } = {}) {
+    this.db = db;
+    this.migrationsPath = migrationsPath;
+    this.logger = logger;
+    this.initializeMigrationsTable();
+  }
 
-    initializeMigrationsTable() {
-        const createMigrationsTable = `
-            CREATE TABLE IF NOT EXISTS migrations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                filename TEXT UNIQUE NOT NULL,
-                executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `;
-        this.db.exec(createMigrationsTable);
-    }
+  initializeMigrationsTable() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT UNIQUE NOT NULL,
+        executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  }
 
-    async runMigrations() {
-        try {
-            const migrationFiles = this.getMigrationFiles();
-            const executedMigrations = this.getExecutedMigrations();
+  async runMigrations() {
+    const appliedMigrations = [];
+    const migrationFiles = this.getMigrationFiles();
+    const executedMigrations = new Set(this.getExecutedMigrations());
 
-            for (const filename of migrationFiles) {
-                if (!executedMigrations.includes(filename)) {
-                    await this.executeMigration(filename);
-                    this.markMigrationAsExecuted(filename);
-                }
-            }
-        } catch (error) {
-            // Ignore duplicate column errors - these are expected when schema already exists
-            if (error.message && error.message.includes('duplicate column name')) {
-                return;
-            }
-            throw error;
+    for (const filename of migrationFiles) {
+      if (executedMigrations.has(filename)) {
+        continue;
+      }
+
+      try {
+        await this.executeMigration(filename);
+      } catch (error) {
+        if (!this.isSkippableMigrationError(error)) {
+          throw error;
         }
+
+        this.logger.warn(`Skipping already-applied migration ${filename}: ${error.message}`);
+      }
+
+      this.markMigrationAsExecuted(filename);
+      appliedMigrations.push(filename);
     }
 
-    getMigrationFiles() {
-        try {
-            return readdirSync(this.migrationsPath)
-                .filter(file => file.endsWith('.sql'))
-                .sort();
-        } catch (error) {
-            return [];
-        }
+    return appliedMigrations;
+  }
+
+  getMigrationFiles() {
+    try {
+      return readdirSync(this.migrationsPath)
+        .filter((file) => file.endsWith('.sql'))
+        .sort();
+    } catch (_error) {
+      return [];
     }
+  }
 
-    getExecutedMigrations() {
-        const stmt = this.db.prepare('SELECT filename FROM migrations ORDER BY id');
-        const rows = stmt.all();
-        return rows.map(row => row.filename);
+  getExecutedMigrations() {
+    const stmt = this.db.prepare('SELECT filename FROM migrations ORDER BY id');
+    const rows = stmt.all();
+    return rows.map((row) => row.filename);
+  }
+
+  async executeMigration(filename) {
+    const filePath = join(this.migrationsPath, filename);
+    const sql = readFileSync(filePath, 'utf-8');
+
+    this.db.pragma('writable_schema = ON');
+
+    try {
+      this.db.exec(sql);
+    } finally {
+      this.db.pragma('writable_schema = OFF');
     }
+  }
 
-    async executeMigration(filename) {
-        const filePath = join(this.migrationsPath, filename);
-        const sql = readFileSync(filePath, 'utf-8');
+  isSkippableMigrationError(error) {
+    return Boolean(error?.message && error.message.includes('duplicate column name'));
+  }
 
-        // Temporarily disable schema validation to allow migrations on databases
-        // with legacy/quirky schema definitions (e.g., double-quoted string literals)
-        this.db.pragma('writable_schema = ON');
+  markMigrationAsExecuted(filename) {
+    const stmt = this.db.prepare('INSERT INTO migrations (filename) VALUES (?)');
+    stmt.run(filename);
+  }
 
-        try {
-            this.db.exec(sql);
-        } catch (error) {
-            throw error; // Re-throw other errors
-        } finally {
-            // Re-enable schema validation
-            this.db.pragma('writable_schema = OFF');
-        }
-    }
-
-    markMigrationAsExecuted(filename) {
-        const stmt = this.db.prepare('INSERT INTO migrations (filename) VALUES (?)');
-        stmt.run(filename);
-    }
-
-    getAppliedMigrations() {
-        return this.getExecutedMigrations();
-    }
+  getAppliedMigrations() {
+    return this.getExecutedMigrations();
+  }
 }
 
 module.exports = { MigrationManager };

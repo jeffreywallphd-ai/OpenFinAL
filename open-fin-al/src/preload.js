@@ -77,7 +77,7 @@ contextBridge.exposeInMainWorld('database', {
   SQLiteGet: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteGet, request),
   SQLiteQuery: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteQuery, request),
   SQLiteSelectData: (request) => invokeContract(ipcRenderer, ipcContracts.database.selectData, request),
-  SQLiteSelect: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteQuery, request),
+  SQLiteSelect: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteQuery, request), // legacy alias for SQLiteQuery
   SQLiteDelete: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteDelete, request),
   SQLiteUpdate: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteUpdate, request),
   SQLiteInsert: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteInsert, request),

@@ -118,10 +118,20 @@ function createProxyServer({ express, cors, axios, certificateService, logger = 
     return server;
   }
 
+  function stop() {
+    if (!server) {
+      return;
+    }
+
+    server.close();
+    server = undefined;
+  }
+
   return {
     buildAxiosRequestConfig,
     handleProxyRequest,
     start,
+    stop,
     validatePeerCertificate,
   };
 }
