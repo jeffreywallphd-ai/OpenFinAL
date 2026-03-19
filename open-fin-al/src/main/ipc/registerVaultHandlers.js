@@ -1,7 +1,9 @@
+const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+
 function registerVaultHandlers({ ipcMain, secretService, certificateService }) {
-  ipcMain.handle('get-secret', (_event, key) => secretService.getSecret(key));
-  ipcMain.handle('set-secret', (_event, key, value) => secretService.setSecret(key, value));
-  ipcMain.handle('refresh-cert', (_event, hostname) => certificateService.refreshCertificateFingerprint(hostname));
+  registerHandle(ipcMain, ipcContracts.vault.getSecret, ({ key }) => secretService.getSecret(key));
+  registerHandle(ipcMain, ipcContracts.vault.setSecret, ({ key, value }) => secretService.setSecret(key, value));
+  registerHandle(ipcMain, ipcContracts.vault.refreshCert, ({ hostname }) => certificateService.refreshCertificateFingerprint(hostname));
 }
 
 module.exports = {

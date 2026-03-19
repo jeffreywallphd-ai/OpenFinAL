@@ -1,17 +1,5 @@
 import { MarketStatus } from "@Entity/MarketStatus";
 
-// allow the transformers contextBridge to be used in TypeScript
-declare global {
-    interface Window { 
-        vault: any,
-        config: any
-     }
-}
-
-/*declare global {
-    interface Window { config: any }
-}*/
-
 class ConfigUpdater {
     vault:any;
     keys = ["ALPHAVANTAGE_API_KEY","FMP_API_KEY","OPENAI_API_KEY","HUGGINGFACE_API_KEY"];

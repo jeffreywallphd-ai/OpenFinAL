@@ -6,13 +6,6 @@ import { APIEndpoint } from "../../../Entity/APIEndpoint";
 import { JSONRequest } from "../../Request/JSONRequest";
 import { Asset } from "../../../Entity/Asset";
 
-declare global {
-    interface Window { 
-        database: any,
-        exApi: any
-    }
-}
-
 export class SQLiteAssetGateway implements ISqlDataGateway {
     connection: any = null;
     sourceName: string = "SQLite Database";

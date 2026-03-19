@@ -2,105 +2,102 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 const { contextBridge, ipcRenderer } = require('electron');
-  
+const { invokeContract, ipcContracts, sendContract } = require('./IPC/contracts');
+
 contextBridge.exposeInMainWorld('electron', {
-  ipcRenderer: require('electron').ipcRenderer,
+  ipcRenderer,
 });
 
 contextBridge.exposeInMainWorld('electronApp', {
-    getUserPath: () => ipcRenderer.invoke('get-user-path'),
-    getAssetPath: async () => ipcRenderer.invoke('get-asset-path')    
+  getUserPath: () => invokeContract(ipcRenderer, ipcContracts.config.getUserPath),
+  getAssetPath: () => invokeContract(ipcRenderer, ipcContracts.config.getAssetPath),
 });
 
 contextBridge.exposeInMainWorld('file', {
-    read: (file) => ipcRenderer.invoke('read-file', file),
-    readBinary: (file) => ipcRenderer.invoke('read-binary', file),
+  read: (filePath) => invokeContract(ipcRenderer, ipcContracts.files.read, filePath),
+  readBinary: (filePath) => invokeContract(ipcRenderer, ipcContracts.files.readBinary, filePath),
 });
 
 contextBridge.exposeInMainWorld('exApi', {
-    fetch: async (url, params={}) => {
-        try {
-            var urlString = `http://localhost:3001/proxy?url=${encodeURIComponent(url)}`;
-                        
-            var response;
-            if(!params || Object.keys(params).length === 0) {
-                response = await fetch(urlString);
-            } else {
-                response = await fetch(urlString, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(params)
-                });
-            }
+  fetch: async (url, params = {}) => {
+    try {
+      const urlString = `http://localhost:3001/proxy?url=${encodeURIComponent(url)}`;
 
-            if (!response.ok) {
-              throw new Error(`The request failed with status: ${response.status}`);
-            }
+      let response;
+      if (!params || Object.keys(params).length === 0) {
+        response = await fetch(urlString);
+      } else {
+        response = await fetch(urlString, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(params),
+        });
+      }
 
-            const data = await response.json();
-            return data;
-          } catch (error) {
-            console.error('Fetch error: ', error);
-            return {}; // Return a default value (empty object)
-        }
+      if (!response.ok) {
+        throw new Error(`The request failed with status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Fetch error: ', error);
+      return {};
     }
+  },
 });
 
 contextBridge.exposeInMainWorld('vault', {
-    getSecret: (key) => ipcRenderer.invoke('get-secret', key),
-    setSecret: (key, value) => ipcRenderer.invoke('set-secret', key, value),
-    refreshCert: (hostname) => ipcRenderer.invoke('refresh-cert', hostname)
+  getSecret: (key) => invokeContract(ipcRenderer, ipcContracts.vault.getSecret, key),
+  setSecret: (key, value) => invokeContract(ipcRenderer, ipcContracts.vault.setSecret, key, value),
+  refreshCert: (hostname) => invokeContract(ipcRenderer, ipcContracts.vault.refreshCert, hostname),
 });
 
 contextBridge.exposeInMainWorld('transformers', {
-    runTextGeneration: (model, prompt, params) => ipcRenderer.invoke('run-transformers', model, prompt, params)
+  runTextGeneration: (model, prompt, params) => invokeContract(
+    ipcRenderer,
+    ipcContracts.transformers.runTextGeneration,
+    model,
+    prompt,
+    params,
+  ),
 });
 
 contextBridge.exposeInMainWorld('config', {
-    exists: () => ipcRenderer.invoke('has-config'),
-    save: (config) => ipcRenderer.invoke('save-config', config),
-    load: () => ipcRenderer.invoke('load-config'),
-    getUsername: () => ipcRenderer.invoke('get-username')
+  exists: () => invokeContract(ipcRenderer, ipcContracts.config.exists),
+  save: (config) => invokeContract(ipcRenderer, ipcContracts.config.save, config),
+  load: () => invokeContract(ipcRenderer, ipcContracts.config.load),
+  getUsername: () => invokeContract(ipcRenderer, ipcContracts.config.getUsername),
 });
 
 contextBridge.exposeInMainWorld('database', {
-    SQLiteExists: () => ipcRenderer.invoke('sqlite-exists'),
-    SQLiteInit: (schema) => ipcRenderer.invoke('sqlite-init', schema),
-    SQLiteGet: (object) => ipcRenderer.invoke('sqlite-get', object),
-    SQLiteQuery: (object) => ipcRenderer.invoke('sqlite-query', object),
-    SQLiteSelectData: (object) => ipcRenderer.invoke('select-data', object),
-    SQLiteSelect: (object) => ipcRenderer.invoke('sqlite-query', object),
-    SQLiteDelete: (object) => ipcRenderer.invoke('sqlite-delete', object),
-    SQLiteUpdate: (object) => ipcRenderer.invoke('sqlite-update', object),
-    SQLiteInsert: (object) => ipcRenderer.invoke('sqlite-insert', object)
+  SQLiteExists: () => invokeContract(ipcRenderer, ipcContracts.database.sqliteExists),
+  SQLiteInit: (schema) => invokeContract(ipcRenderer, ipcContracts.database.sqliteInit, schema),
+  SQLiteGet: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteGet, request),
+  SQLiteQuery: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteQuery, request),
+  SQLiteSelectData: (request) => invokeContract(ipcRenderer, ipcContracts.database.selectData, request),
+  SQLiteSelect: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteQuery, request),
+  SQLiteDelete: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteDelete, request),
+  SQLiteUpdate: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteUpdate, request),
+  SQLiteInsert: (request) => invokeContract(ipcRenderer, ipcContracts.database.sqliteInsert, request),
 });
 
-/*
-commenting out this contextBridge to void require() errors, because it seems to have been replaced by the new yahooFinance context bridge below. 
-That bridge calls to a dynamic import instea of require to avoid errors. Will remove this after further testing.
-contextBridge.exposeInMainWorld('yahoo', {
-    finance: require('yahoo-finance2').default
-});*/
-
 contextBridge.exposeInMainWorld('yahooFinance', {
-    chart: (ticker, options) => ipcRenderer.invoke('yahoo-chart', ticker, options),
-    search: async (keyword, options) => ipcRenderer.invoke('yahoo-search', keyword, options),
-    historical: async (ticker, options) => ipcRenderer.invoke('yahoo-historical', ticker, options)
+  chart: (ticker, options) => invokeContract(ipcRenderer, ipcContracts.yahooFinance.chart, ticker, options),
+  search: (keyword, options) => invokeContract(ipcRenderer, ipcContracts.yahooFinance.search, keyword, options),
+  historical: (ticker, options) => invokeContract(ipcRenderer, ipcContracts.yahooFinance.historical, ticker, options),
 });
 
 contextBridge.exposeInMainWorld('urlWindow', {
-    openUrlWindow: (url) => ipcRenderer.send('open-url-window', url),
-    getUrlBodyTextHidden: (url) => ipcRenderer.invoke('get-url-body-text-hidden', url)
+  openUrlWindow: (url) => sendContract(ipcRenderer, ipcContracts.urlWindow.open, url),
+  getUrlBodyTextHidden: (url) => invokeContract(ipcRenderer, ipcContracts.urlWindow.getBodyTextHidden, url),
 });
 
 contextBridge.exposeInMainWorld('puppetApi', {
-    getPageText: (url) => ipcRenderer.invoke('puppeteer:get-page-text', url)
+  getPageText: (url) => invokeContract(ipcRenderer, ipcContracts.puppeteer.getPageText, url),
 });
 
 contextBridge.exposeInMainWorld('convert', {
-    xmlToJson: require('xml2js')
+  xmlToJson: require('xml2js'),
 });
-
-

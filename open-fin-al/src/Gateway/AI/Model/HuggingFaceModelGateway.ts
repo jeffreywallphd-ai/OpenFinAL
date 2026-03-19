@@ -5,11 +5,6 @@ import { env } from '@xenova/transformers';
 env.allowLocalModels = false;
 env.localModelPath = '/models'; // resolves to http://localhost:3000/models
 
-// allow the transformers contextBridge to be used in TypeScript
-declare global {
-    interface Window { transformers: any }
-}
-
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 type HFGen = { generated_text: string } | { generated_text: string }[];
 

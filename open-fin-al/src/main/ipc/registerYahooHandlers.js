@@ -1,7 +1,9 @@
+const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+
 function registerYahooHandlers({ ipcMain, yahooFinanceService }) {
-  ipcMain.handle('yahoo-chart', (_event, ticker, options) => yahooFinanceService.yahooChart(ticker, options));
-  ipcMain.handle('yahoo-search', (_event, keyword, options) => yahooFinanceService.yahooSearch(keyword, options));
-  ipcMain.handle('yahoo-historical', (_event, ticker, options) => yahooFinanceService.yahooHistorical(ticker, options));
+  registerHandle(ipcMain, ipcContracts.yahooFinance.chart, ({ ticker, options }) => yahooFinanceService.yahooChart(ticker, options));
+  registerHandle(ipcMain, ipcContracts.yahooFinance.search, ({ keyword, options }) => yahooFinanceService.yahooSearch(keyword, options));
+  registerHandle(ipcMain, ipcContracts.yahooFinance.historical, ({ ticker, options }) => yahooFinanceService.yahooHistorical(ticker, options));
 }
 
 module.exports = {

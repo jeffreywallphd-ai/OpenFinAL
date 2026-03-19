@@ -1,15 +1,17 @@
+const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+
 function registerDatabaseHandlers({ ipcMain, databaseService, logger = console }) {
-  ipcMain.handle('sqlite-exists', () => databaseService.sqliteExists());
-  ipcMain.handle('sqlite-init', (_event, schema) => databaseService.initDatabase(schema));
-  ipcMain.handle('select-data', (_event, args) => databaseService.queryAll(args.query, args.inputData));
-  ipcMain.handle('sqlite-query', (_event, args) => databaseService.queryAll(args.query, args.parameters));
-  ipcMain.handle('sqlite-get', (_event, args) => databaseService.queryOne(args.query, args.parameters));
-  ipcMain.handle('sqlite-insert', (_event, args) => databaseService.run(args.query, args.parameters));
-  ipcMain.handle('sqlite-update', (_event, args) => {
-    logger.log('Executing query:', args.query, 'with parameters:', args.parameters);
-    return databaseService.run(args.query, args.parameters);
+  registerHandle(ipcMain, ipcContracts.database.sqliteExists, () => databaseService.sqliteExists());
+  registerHandle(ipcMain, ipcContracts.database.sqliteInit, ({ schema }) => databaseService.initDatabase(schema));
+  registerHandle(ipcMain, ipcContracts.database.selectData, ({ query, inputData }) => databaseService.queryAll(query, inputData));
+  registerHandle(ipcMain, ipcContracts.database.sqliteQuery, ({ query, parameters }) => databaseService.queryAll(query, parameters));
+  registerHandle(ipcMain, ipcContracts.database.sqliteGet, ({ query, parameters }) => databaseService.queryOne(query, parameters));
+  registerHandle(ipcMain, ipcContracts.database.sqliteInsert, ({ query, parameters }) => databaseService.run(query, parameters));
+  registerHandle(ipcMain, ipcContracts.database.sqliteUpdate, ({ query, parameters }) => {
+    logger.log('Executing query:', query, 'with parameters:', parameters);
+    return databaseService.run(query, parameters);
   });
-  ipcMain.handle('sqlite-delete', (_event, args) => databaseService.run(args.query, args.parameters));
+  registerHandle(ipcMain, ipcContracts.database.sqliteDelete, ({ query, parameters }) => databaseService.run(query, parameters));
 }
 
 module.exports = {
