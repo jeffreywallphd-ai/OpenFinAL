@@ -1,59 +1,111 @@
-function createDatabaseService({ sqlite3, fs, path, app, Database, MigrationManager, logger = console }) {
+function createDatabaseService({
+  fs,
+  path,
+  app,
+  Database,
+  MigrationManager,
+  logger = console,
+}) {
   const dbFileName = 'OpenFinAL.sqlite';
   const dbPath = path.join(app.getPath('userData'), dbFileName);
+  const migrationsPath = path.join(app.getAppPath(), 'src', 'Database', 'migrations');
 
   let db;
-  let betterDb;
+  let migrationsApplied = false;
 
-  async function runMigrations() {
-    try {
-      if (!betterDb) {
-        return;
-      }
-
-      const migrationsPath = path.join(__dirname, 'Database/migrations');
-      const migrationManager = new MigrationManager(betterDb, migrationsPath);
-      await migrationManager.runMigrations();
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async function sqliteExists() {
+  function sqliteExists() {
     try {
       return fs.existsSync(dbPath);
     } catch (error) {
-      logger.log(error);
+      logger.error('Error checking for SQLite database:', error);
       return false;
     }
   }
 
-  async function getDB() {
-    try {
-      db = new sqlite3.Database(dbPath, () => {});
-
-      // Also initialize better-sqlite3 for migrations
-      // betterDb = new Database(dbPath);
-      // await runMigrations();
-
+  function openConnection() {
+    if (db) {
       return db;
-    } catch (_error) {
-      return null;
     }
-  }
 
-  async function ensureDB() {
-    if (!db) {
-      await getDB();
-    }
+    db = new Database(dbPath);
+    db.pragma('foreign_keys = ON');
+    db.pragma('journal_mode = WAL');
 
     return db;
   }
 
+  function hasTable(tableName) {
+    const database = openConnection();
+    const row = database.prepare(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+    ).get(tableName);
+
+    return Boolean(row);
+  }
+
+  async function runMigrations({ force = false } = {}) {
+    const database = openConnection();
+
+    if (migrationsApplied && !force) {
+      return [];
+    }
+
+    if (!fs.existsSync(migrationsPath) || !hasTable('User')) {
+      migrationsApplied = true;
+      return [];
+    }
+
+    const migrationManager = new MigrationManager(database, migrationsPath, { logger });
+    const appliedMigrations = await migrationManager.runMigrations();
+    migrationsApplied = true;
+
+    return appliedMigrations;
+  }
+
+  async function ensureDB() {
+    const databaseExists = sqliteExists();
+    const database = openConnection();
+
+    if (databaseExists) {
+      await runMigrations();
+    }
+
+    return database;
+  }
+
+  async function execute({ query, parameters = [], mode = 'all' }) {
+    const database = await ensureDB();
+    const statement = database.prepare(query);
+    const values = Array.isArray(parameters) ? parameters : [];
+
+    switch (mode) {
+      case 'get':
+        return statement.get(...values);
+      case 'run': {
+        const result = statement.run(...values);
+
+        if (query.trim().toUpperCase().startsWith('INSERT')) {
+          const lastID = typeof result.lastInsertRowid === 'bigint'
+            ? Number(result.lastInsertRowid)
+            : result.lastInsertRowid;
+
+          return { ok: true, lastID };
+        }
+
+        return true;
+      }
+      case 'all':
+      default:
+        return statement.all(...values);
+    }
+  }
+
   async function initDatabase(schema) {
     try {
-      await ensureDB();
-      db.exec(schema);
+      const database = openConnection();
+      database.exec(schema);
+      migrationsApplied = false;
+      await runMigrations({ force: true });
       return true;
     } catch (error) {
       logger.error('Error initializing database:', error);
@@ -61,73 +113,36 @@ function createDatabaseService({ sqlite3, fs, path, app, Database, MigrationMana
     }
   }
 
-  async function queryAll(query, dataArray) {
-    await ensureDB();
-
-    return await new Promise((resolve, reject) => {
-      try {
-        db.all(query, dataArray, (error, rows) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve(rows.map((row) => row));
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
+  async function queryAll(query, parameters) {
+    return execute({ query, parameters, mode: 'all' });
   }
 
-  async function queryOne(query, dataArray) {
-    await ensureDB();
-
-    return await new Promise((resolve, reject) => {
-      try {
-        db.get(query, dataArray, (error, data) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve(data);
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
+  async function queryOne(query, parameters) {
+    return execute({ query, parameters, mode: 'get' });
   }
 
-  async function run(query, dataArray) {
-    await ensureDB();
+  async function run(query, parameters) {
+    return execute({ query, parameters, mode: 'run' });
+  }
 
-    return await new Promise((resolve, reject) => {
-      try {
-        db.run(query, dataArray, function onRun(error) {
-          if (error) {
-            reject(error);
-            return;
-          }
+  function closeConnection() {
+    if (!db) {
+      return;
+    }
 
-          if (query.toUpperCase().startsWith('INSERT')) {
-            resolve({ ok: true, lastID: this.lastID });
-            return;
-          }
-
-          resolve(true);
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
+    db.close();
+    db = undefined;
+    migrationsApplied = false;
   }
 
   return {
+    closeConnection,
     dbPath,
     ensureDB,
-    getDB,
+    execute,
+    hasTable,
     initDatabase,
+    openConnection,
     queryAll,
     queryOne,
     run,
