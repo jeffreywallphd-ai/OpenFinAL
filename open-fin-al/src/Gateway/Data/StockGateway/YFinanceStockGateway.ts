@@ -1,5 +1,6 @@
 import { IEntity } from '../../../Entity/IEntity';
-import { StockRequest } from '../../../Entity/StockRequest';
+import { Asset } from '../../../Entity/Asset';
+import { StockTimeSeries } from '../../../Entity/Stock/StockTimeSeries';
 import { IYahooFinanceClient } from '../../../application/services/IYahooFinanceClient';
 import { ElectronYahooFinanceClient } from '../../../infrastructure/electron/ElectronYahooFinanceClient';
 import { IKeylessDataGateway } from '../IKeylessDataGateway';
@@ -54,6 +55,12 @@ export class YFinanceStockGateway implements IKeylessDataGateway {
     const latestQuote = formattedData[formattedData.length - 1] ?? formattedData[0];
 
     if (latestQuote) {
+      const latestPoint = latestQuote.getFieldValue('data')?.slice(-1)[0] ?? null;
+      if (latestPoint) {
+        latestQuote.setFieldValue('quotePrice', latestPoint.price ?? null);
+        latestQuote.setFieldValue('startDate', latestPoint.date ?? null);
+        latestQuote.setFieldValue('endDate', latestPoint.date ?? null);
+      }
       array.push(latestQuote);
     }
 
@@ -94,9 +101,11 @@ export class YFinanceStockGateway implements IKeylessDataGateway {
     const array: Array<IEntity> = [];
 
     for (const item of data) {
-      const entity = new StockRequest();
+      const entity = new Asset();
       entity.setFieldValue('ticker', item['ticker'] ?? item['symbol']);
+      entity.setFieldValue('symbol', item['ticker'] ?? item['symbol']);
       entity.setFieldValue('companyName', item['companyName'] ?? item['shortname']);
+      entity.setFieldValue('name', item['companyName'] ?? item['shortname']);
       array.push(entity);
     }
 

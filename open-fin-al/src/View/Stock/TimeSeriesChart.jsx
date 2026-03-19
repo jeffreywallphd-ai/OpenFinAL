@@ -9,6 +9,7 @@ import React, { useState, useEffect } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { StockInteractor } from "../../Interactor/StockInteractor";
 import { JSONRequest } from "../../Gateway/Request/JSONRequest";
+import { createStockQuoteRequestModel } from "../../Gateway/Transport/StockTransport";
 import { UserInteractor } from "../../Interactor/UserInteractor";
 import { PortfolioInteractor } from "../../Interactor/PortfolioInteractor";
 import { OrderInteractor } from "../../Interactor/OrderInteractor"; 
@@ -117,14 +118,7 @@ function TimeSeriesChart(props) {
     const getCurrentPrice = async () => {
         if(props.state.data) {
             const interactor = new StockInteractor();
-            const requestObj = new JSONRequest(JSON.stringify({
-                request: {
-                    stock: {
-                        action: "quote",
-                        ticker: props.state.data.response.results[0]["ticker"]
-                    }
-                }
-            }));
+            const requestObj = createStockQuoteRequestModel(props.state.data.response.results[0]["ticker"]);
         
             const response = await interactor.get(requestObj);
             window.console.log(response.response);

@@ -6,7 +6,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import {StockInteractor} from "../../Interactor/StockInteractor";
-import {JSONRequest} from "../../Gateway/Request/JSONRequest";
+import { createStockLookupRequestModel } from "../../Gateway/Transport/StockTransport";
 import { FaSearch } from "react-icons/fa";
 
 function SymbolSearchBar(props) {
@@ -45,14 +45,7 @@ function SymbolSearchBar(props) {
 
                 //get data through stock interactor
                 var interactor = new StockInteractor();
-                var requestObj = new JSONRequest(`{ 
-                    "request": { 
-                        "stock": {
-                            "action": "lookup",
-                            "keyword": "${searchRef.current.value}"
-                        }
-                    }
-                }`);
+                const requestObj = createStockLookupRequestModel(searchRef.current.value);
 
                 const searchData = await interactor.get(requestObj);
                 setSecuritiesList(searchData.response.results);

@@ -11,6 +11,7 @@ import { PortfolioInteractor } from "../Interactor/PortfolioInteractor";
 import {PortfolioTransactionInteractor} from "../Interactor/PortfolioTransactionInteractor";
 import { StockInteractor } from "../Interactor/StockInteractor";
 import {JSONRequest} from "../Gateway/Request/JSONRequest";
+import { createStockQuoteRequestModel } from "../Gateway/Transport/StockTransport";
 import { HeaderContext } from "./App/LoadedLayout";
 
 import { PieChart, Pie, Sector, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'; // For adding charts
@@ -308,14 +309,7 @@ class Portfolio extends Component {
 
                 if(asset.type==="Stock") {
                     const interactor = new StockInteractor();
-                    const quoteRequestObj = new JSONRequest(JSON.stringify({
-                        request: {
-                            stock: {
-                                action: "quote",
-                                ticker: asset["symbol"]
-                            }
-                        }
-                    }));
+                    const quoteRequestObj = createStockQuoteRequestModel(asset["symbol"]);
                 
                     const quoteResponse = await interactor.get(quoteRequestObj);
 

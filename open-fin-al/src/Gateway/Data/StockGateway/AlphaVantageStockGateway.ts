@@ -1,4 +1,5 @@
-import {StockRequest} from "../../../Entity/StockRequest";
+import { Asset } from "../../../Entity/Asset";
+import { StockTimeSeries } from "../../../Entity/Stock/StockTimeSeries";
 import {IEntity} from "../../../Entity/IEntity";
 import {IKeyedDataGateway} from "../IKeyedDataGateway";
 import { APIEndpoint } from "../../../Entity/APIEndpoint";
@@ -104,10 +105,12 @@ export class AlphaVantageStockGateway implements IKeyedDataGateway {
         const bestMatches = data["bestMatches"];
 
         for (const match of bestMatches) {           
-            var entity = new StockRequest();
+            var entity = new Asset();
             
             entity.setFieldValue("ticker", match["1. symbol"]);
+            entity.setFieldValue("symbol", match["1. symbol"]);
             entity.setFieldValue("companyName", match["2. name"]);
+            entity.setFieldValue("name", match["2. name"]);
             
             array.push(entity);
         }
@@ -120,7 +123,7 @@ export class AlphaVantageStockGateway implements IKeyedDataGateway {
 
         const quote = data["Global Quote"];
          
-        var entity = new StockRequest();
+        var entity = new StockTimeSeries();
         
         entity.setFieldValue("ticker", quote["01. symbol"]);
         entity.setFieldValue("quotePrice", quote["05. price"]);

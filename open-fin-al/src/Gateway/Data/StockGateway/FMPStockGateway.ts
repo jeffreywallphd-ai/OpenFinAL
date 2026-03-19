@@ -1,4 +1,4 @@
-import { StockRequest } from "../../../Entity/StockRequest";
+import { Asset } from "../../../Entity/Asset";
 import { IEntity } from "../../../Entity/IEntity";
 import { IKeyedDataGateway } from "../IKeyedDataGateway";
 
@@ -130,9 +130,11 @@ export class FinancialModelingPrepGateway implements IKeyedDataGateway {
     var i = 0;
 
     for (const match of data) {
-      var entity = new StockRequest();
+      var entity = new Asset();
       entity.setFieldValue("ticker", match["symbol"]);
+      entity.setFieldValue("symbol", match["symbol"]);
       entity.setFieldValue("companyName", match["name"]);
+      entity.setFieldValue("name", match["name"]);
       array.push(entity);
 
       // limit to the top 10 listings
