@@ -7,20 +7,23 @@
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
+    "dev": "npm run start",
     "debug": "ELECTRON_ENABLE_LOGGING=1 electron-forge start",
     "debug-main": "electron-forge start -- --inspect-electron=9229",
     "debug-renderer": "electron-forge start -- --remote-debugging-port=9222",
-    "clean": "rm -rf .webpack out node_modules package-lock.json && npm install && npm run postinstall",
+    "clean": "rm -rf .webpack out dist node_modules package-lock.json && npm install && npm run postinstall",
     "package": "electron-forge package",
     "make": "electron-forge make",
+    "build": "npm run make",
+    "build:portable": "electron-builder --config electron-builder.json --win --x64",
     "publish": "electron-forge publish",
     "postinstall": "electron-rebuild --version 35.1.5",
-    "build": "electron-builder --win --x64",
     "lint": "npm run lint:architecture",
+    "lint:architecture": "node scripts/check-architecture.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint:architecture": "node scripts/check-architecture.js"
+    "verify": "npm run lint && npm run test -- --runInBand"
   },
   "keywords": [],
   "author": {
@@ -99,38 +102,5 @@
     "uuid": "^11.1.0",
     "xml2js": "^0.6.2",
     "yahoo-finance2": "^2.13.3"
-  },
-  "build": {
-    "appId": "com.openfinal.app",
-    "productName": "OpenFinAL",
-    "win": {
-      "target": [
-        "portable"
-      ]
-    },
-    "asar": true,
-    "asarUnpack": [
-      "**/*.node"
-    ],
-    "extraResources": [
-      {
-        "from": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
-        "to": "better_sqlite3.node"
-      },
-      {
-        "from": "node_modules/better-sqlite3",
-        "to": "node_modules/better-sqlite3",
-        "filter": [
-          "**/*.js",
-          "**/package.json"
-        ]
-      }
-    ],
-    "files": [
-      "src/**/*",
-      "node_modules/**/*",
-      "!node_modules/better-sqlite3/build/Release/obj/**/*",
-      "!node_modules/better-sqlite3/build/Release/*.pdb"
-    ]
   }
 }

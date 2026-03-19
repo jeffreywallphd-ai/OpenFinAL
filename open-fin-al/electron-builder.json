@@ -1,0 +1,33 @@
+{
+  "appId": "com.openfinal.app",
+  "productName": "OpenFinAL",
+  "win": {
+    "target": [
+      "portable"
+    ]
+  },
+  "asar": true,
+  "asarUnpack": [
+    "**/*.node"
+  ],
+  "extraResources": [
+    {
+      "from": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "to": "better_sqlite3.node"
+    },
+    {
+      "from": "node_modules/better-sqlite3",
+      "to": "node_modules/better-sqlite3",
+      "filter": [
+        "**/*.js",
+        "**/package.json"
+      ]
+    }
+  ],
+  "files": [
+    "src/**/*",
+    "node_modules/**/*",
+    "!node_modules/better-sqlite3/build/Release/obj/**/*",
+    "!node_modules/better-sqlite3/build/Release/*.pdb"
+  ]
+}
