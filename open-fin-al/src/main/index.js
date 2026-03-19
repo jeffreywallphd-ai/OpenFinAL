@@ -9,7 +9,6 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const keytar = require('keytar');
 const Database = require('better-sqlite3');
-const { pipeline, env } = require('@xenova/transformers');
 const { app, BrowserWindow, shell, session, ipcMain } = require('electron');
 const { MigrationManager } = require('../Database/MigrationManager');
 const { createMainWindow } = require('./window/createMainWindow');
@@ -28,7 +27,8 @@ const { createCertificateService } = require('./services/certificateService');
 const { createConfigService } = require('./services/configService');
 const { createFileService } = require('./services/fileService');
 const { createDatabaseService } = require('./services/databaseService');
-const { createTransformersService } = require('./services/transformersService');
+const { createModelRuntimeService } = require('./services/modelRuntime/createModelRuntimeService');
+const { createTransformersTextGenerationRuntime } = require('./services/modelRuntime/createTransformersTextGenerationRuntime');
 const { createYahooFinanceService } = require('./services/yahooFinanceService');
 const { createOutboundServices } = require('./services/outbound/createOutboundServices');
 const { createSecretService } = require('./services/secretService');
@@ -121,7 +121,9 @@ function bootstrapMainProcess() {
     Database,
     MigrationManager,
   });
-  const transformersService = createTransformersService({ pipeline, env });
+  const modelRuntimeService = createModelRuntimeService({
+    textGenerationRuntime: createTransformersTextGenerationRuntime(),
+  });
   const yahooFinanceService = createYahooFinanceService({ getYF });
   const outboundServices = createOutboundServices({
     axios,
@@ -141,7 +143,7 @@ function bootstrapMainProcess() {
   registerDatabaseHandlers({ ipcMain, databaseService });
   registerYahooHandlers({ ipcMain, yahooFinanceService });
   registerOutboundHandlers({ ipcMain, outboundServices });
-  registerTransformersHandlers({ ipcMain, transformersService });
+  registerTransformersHandlers({ ipcMain, modelRuntimeService });
   registerPuppeteerHandlers({ ipcMain, puppeteerService });
 
   let mainWindow;
