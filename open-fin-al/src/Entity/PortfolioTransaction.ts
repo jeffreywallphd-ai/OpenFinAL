@@ -74,7 +74,6 @@ export class PortfolioTransaction implements IEntity {
         if(json.hasOwnProperty("debitEntry")) {
             const debitTransactionEntry = new PortfolioTransactionEntry();
             var debitEntryRequestModel = requestSplitter.split("transactionEntry", "transaction", "debitEntry", requestModel.request.request.action);
-            window.console.error(debitEntryRequestModel);
             debitTransactionEntry.fillWithRequest(debitEntryRequestModel);
             this.setFieldValue("debitEntry", debitTransactionEntry);
         }
