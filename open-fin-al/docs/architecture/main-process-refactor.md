@@ -37,7 +37,8 @@ Each IPC registration module maps stable channel names to a specific service bou
 - `services/secretService.js`: OS vault reads/writes through Keytar.
 - `services/fileService.js`: UTF-8 and binary file reads.
 - `services/databaseService.js`: SQLite connection management and query helpers.
-- `services/transformersService.js`: transformers pipeline configuration and model reuse.
+- `services/modelRuntime/createModelRuntimeService.js`: generic main-process model runtime boundary used by IPC handlers.
+- `services/modelRuntime/createTransformersTextGenerationRuntime.js`: Transformers.js-backed text-generation runtime with per-model pipeline reuse.
 - `services/yahooFinanceService.js`: lazy Yahoo Finance API access.
 - `services/puppeteerService.js`: page text extraction for automation/scraping.
 

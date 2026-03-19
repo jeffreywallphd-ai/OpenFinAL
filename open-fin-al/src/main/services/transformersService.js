@@ -1,36 +1,10 @@
-function createTransformersService({ pipeline, env }) {
-  env.allowLocalModels = false;
-  env.localModelPath = '/models';
+const { createModelRuntimeService } = require('./modelRuntime/createModelRuntimeService');
+const { createTransformersTextGenerationRuntime } = require('./modelRuntime/createTransformersTextGenerationRuntime');
 
-  let activeModelName = null;
-  let activePipeline = null;
-
-  async function getPipeline(model) {
-    if (model !== activeModelName) {
-      activeModelName = model;
-      activePipeline = pipeline('text-generation', model);
-    }
-
-    return activePipeline;
-  }
-
-  async function runTextGeneration(model, prompt, params) {
-    if (!model) {
-      throw new Error('An model must be specified');
-    }
-
-    if (!prompt) {
-      throw new Error('A prompt must be provided');
-    }
-
-    const runner = await getPipeline(model);
-    return runner(prompt, params);
-  }
-
-  return {
-    getPipeline,
-    runTextGeneration,
-  };
+function createTransformersService(options) {
+  return createModelRuntimeService({
+    textGenerationRuntime: createTransformersTextGenerationRuntime(options),
+  });
 }
 
 module.exports = {
