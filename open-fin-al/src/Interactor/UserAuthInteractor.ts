@@ -4,7 +4,7 @@ import { PinEncryption } from '../Utility/PinEncryption';
 interface OpenFinALDatabase {
     SQLiteQuery: (params: { query: string; parameters?: any[] }) => Promise<any[]>;
     SQLiteGet: (params: { query: string; parameters?: any[] }) => Promise<any>;
-    SQLiteInsert: (params: { query: string; parameters?: any[] }) => Promise<{ lastInsertRowid: number }>;
+    SQLiteInsert: (params: { query: string; parameters?: any[] }) => Promise<any>;
     SQLiteUpdate: (params: { query: string; parameters?: any[] }) => Promise<any>;
 }
 
@@ -57,7 +57,7 @@ export class UserAuthInteractor {
             const pinHash = await PinEncryption.hashPin(userData.pin);
 
             // Insert new user
-            const result = await window.database.SQLiteInsert({
+            const result: any = await window.database.SQLiteInsert({
                 query: `INSERT INTO User (firstName, lastName, username, pinHash) VALUES (?, ?, ?, ?)`,
                 parameters: [userData.firstName, userData.lastName, userData.username, pinHash]
             });
@@ -101,7 +101,7 @@ export class UserAuthInteractor {
                 return { success: false, error: 'User not found' };
             }
 
-            const user = users[0];
+            const user: any = users[0];
 
             // Verify PIN
             const isPinValid = await PinEncryption.verifyPin(pin, user.pinHash);
@@ -152,7 +152,7 @@ export class UserAuthInteractor {
                 return { success: false, error: 'User not found' };
             }
 
-            const user = users[0];
+            const user: any = users[0];
 
             // Verify current PIN
             const isCurrentPinValid = await PinEncryption.verifyPin(currentPin, user.pinHash);
@@ -233,7 +233,7 @@ export class UserAuthInteractor {
                 return { success: false, error: 'User not found' };
             }
 
-            const user = users[0];
+            const user: any = users[0];
 
             // Verify identity using first and last name
             if (user.firstName.toLowerCase() !== firstName.toLowerCase() || 

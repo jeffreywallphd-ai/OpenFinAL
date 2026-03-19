@@ -1,5 +1,7 @@
+const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+
 function registerPuppeteerHandlers({ ipcMain, puppeteerService }) {
-  ipcMain.handle('puppeteer:get-page-text', (_event, url) => puppeteerService.getPageText(url));
+  registerHandle(ipcMain, ipcContracts.puppeteer.getPageText, ({ url }) => puppeteerService.getPageText(url));
 }
 
 module.exports = {

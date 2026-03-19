@@ -3,11 +3,6 @@ import {ISqlDataGateway} from "../ISqlDataGateway";
 import { Asset } from "../../../Entity/Asset";
 import { Portfolio } from "../../../Entity/Portfolio";
 
-// allow the yahoo.finance contextBridge to be used in TypeScript
-declare global {
-    interface Window { electron: any }
-}
-
 export class SQLitePortfolioTransactionGateway implements ISqlDataGateway {
     connection: any = null;
     sourceName: string = "SQLite Database";

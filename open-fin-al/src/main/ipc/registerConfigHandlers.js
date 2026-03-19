@@ -1,10 +1,12 @@
+const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+
 function registerConfigHandlers({ ipcMain, configService }) {
-  ipcMain.handle('get-username', () => configService.getUsername());
-  ipcMain.handle('get-user-path', () => configService.getAppPath());
-  ipcMain.handle('get-asset-path', () => configService.getAssetPath());
-  ipcMain.handle('has-config', () => configService.hasConfig());
-  ipcMain.handle('save-config', (_event, config) => configService.saveConfig(config));
-  ipcMain.handle('load-config', () => configService.loadConfig());
+  registerHandle(ipcMain, ipcContracts.config.getUsername, () => configService.getUsername());
+  registerHandle(ipcMain, ipcContracts.config.getUserPath, () => configService.getAppPath());
+  registerHandle(ipcMain, ipcContracts.config.getAssetPath, () => configService.getAssetPath());
+  registerHandle(ipcMain, ipcContracts.config.exists, () => configService.hasConfig());
+  registerHandle(ipcMain, ipcContracts.config.save, (config) => configService.saveConfig(config));
+  registerHandle(ipcMain, ipcContracts.config.load, () => configService.loadConfig());
 }
 
 module.exports = {

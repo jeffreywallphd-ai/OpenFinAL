@@ -5,13 +5,6 @@ import { parse } from 'node-html-parser';
 import { APIEndpoint } from "../../../Entity/APIEndpoint";
 import { JSONRequest } from "../../Request/JSONRequest";
 
-declare global {
-    interface Window { 
-        database: any,
-        exApi: any
-    }
-}
-
 export class SQLiteCompanyLookupGateway implements ISqlDataGateway {
     connection: any = null;
     sourceName: string = "SQLite Database";

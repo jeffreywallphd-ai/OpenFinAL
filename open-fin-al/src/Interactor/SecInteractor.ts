@@ -8,10 +8,6 @@ import {IDataGateway} from "../Gateway/Data/IDataGateway";
 import {SecRequest} from "../Entity/SecRequest";
 import {SecReportGatewayFactory} from "../Gateway/Data/FinancialReportGatewayFactory";
 
-declare global {
-    interface Window { convert: any; }
-}
-
 export class SecInteractor implements IInputBoundary {
     requestModel: IRequestModel;
     responseModel: IResponseModel;

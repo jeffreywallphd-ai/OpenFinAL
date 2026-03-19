@@ -32,7 +32,7 @@ export class OpenAIModelGateway implements IKeyedModelGateway{
                 topP = config.NewsSummaryModelSettings.topP;
             }
 
-            var response;
+            var response:any;
 
             try {
                 var url = "https://api.openai.com/v1/chat/completions";

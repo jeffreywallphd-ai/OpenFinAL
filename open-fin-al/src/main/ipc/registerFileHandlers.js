@@ -1,6 +1,8 @@
+const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+
 function registerFileHandlers({ ipcMain, fileService }) {
-  ipcMain.handle('read-file', (_event, file) => fileService.readFromFile(file));
-  ipcMain.handle('read-binary', (_event, file) => fileService.readFromFileBinary(file));
+  registerHandle(ipcMain, ipcContracts.files.read, (filePath) => fileService.readFromFile(filePath));
+  registerHandle(ipcMain, ipcContracts.files.readBinary, (filePath) => fileService.readFromFileBinary(filePath));
 }
 
 module.exports = {
