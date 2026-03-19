@@ -4,3 +4,10 @@ This software is provided "as is" without any warranty of any kind, express or i
 ### Disclaimer of Liability
 The authors and copyright holders of this software disclaim all liability for any damages, including incidental, consequential, special, or indirect damages, arising from the use or inability to use this software.
 
+
+
+## Architecture
+
+- Architecture overview: `docs/architecture/architecture-overview.md`
+- Architecture decisions: `docs/architecture/decisions/`
+- Run `npm run lint:architecture` from `open-fin-al/` to verify the currently enforced dependency boundaries.
