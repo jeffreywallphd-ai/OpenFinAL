@@ -3740,3 +3740,98 @@ body.dark-mode .logout-item:hover {
   margin: 0.4rem 0 0;
   padding-left: 1.1rem;
 }
+
+.adaptive-guided-tutorial {
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid #cfd8e3;
+  background: linear-gradient(180deg, rgba(247, 250, 255, 0.95), rgba(255, 255, 255, 0.98));
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
+.adaptive-guided-tutorial.state-recommended {
+  border-color: #1d4ed8;
+}
+
+.adaptive-guided-tutorial.state-completed {
+  border-color: #15803d;
+}
+
+.adaptive-guided-tutorial__summary,
+.adaptive-guided-tutorial__header-row,
+.adaptive-guided-tutorial__panel-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.adaptive-guided-tutorial__header-row {
+  align-items: center;
+}
+
+.adaptive-guided-tutorial__actions {
+  min-width: 10rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.adaptive-guided-tutorial__meta,
+.adaptive-guided-tutorial__graph-reason,
+.adaptive-guided-tutorial__script-hook,
+.adaptive-guided-tutorial__step-counter {
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.adaptive-guided-tutorial__reason-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.adaptive-guided-tutorial__panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #dbe4f0;
+}
+
+.adaptive-guided-tutorial__anchor-card {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-left: 4px solid #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.guided-tutorial-anchor {
+  transition: box-shadow 0.2s ease, outline-color 0.2s ease;
+}
+
+.guided-tutorial-anchor-active {
+  outline: 3px solid rgba(37, 99, 235, 0.85);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.16);
+  border-radius: 10px;
+}
+
+.dark-mode .adaptive-guided-tutorial {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.98));
+  border-color: #334155;
+}
+
+.dark-mode .adaptive-guided-tutorial__panel {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: #475569;
+}
+
+.dark-mode .adaptive-guided-tutorial__meta,
+.dark-mode .adaptive-guided-tutorial__graph-reason,
+.dark-mode .adaptive-guided-tutorial__script-hook,
+.dark-mode .adaptive-guided-tutorial__step-counter {
+  color: #cbd5e1;
+}

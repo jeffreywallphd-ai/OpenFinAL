@@ -4,12 +4,13 @@
 // Disclaimer of Liability
 // The authors of this software disclaim all liability for any damages, including incidental, consequential, special, or indirect damages, arising from the use or inability to use this software.
 
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import { useHeader } from './App/LoadedLayout';
 import { DataContext } from './App';
-import { AdaptiveHelpHintPanel, AdaptiveLearningRecommendations, useAdaptiveLearningCatalogRecommendations } from '@ui/adaptive';
+import { AdaptiveGuidedTutorial, AdaptiveHelpHintPanel, AdaptiveLearningRecommendations, useAdaptiveLearningCatalogRecommendations } from '@ui/adaptive';
+import { GuidedTutorialInteractor } from '../Interactor/GuidedTutorialInteractor';
 
 export function Learn() {
   const { setHeader } = useHeader();
@@ -23,6 +24,8 @@ export function Learn() {
   const searchRef = useRef('SearchTextField');
   const filterRef = useRef('FilterSelect');
   const { adaptiveLearningCatalog, adaptiveLearningLoading } = useAdaptiveLearningCatalogRecommendations(user?.id);
+  const guidedTutorialInteractor = useMemo(() => new GuidedTutorialInteractor(), []);
+  const [tutorialSaving, setTutorialSaving] = useState(false);
 
   useEffect(() => {
     setHeader({
@@ -38,6 +41,21 @@ export function Learn() {
   const checkInput = async (event) => {
     if (event.key === 'Enter') {
       await selectData();
+    }
+  };
+
+  const handleTutorialComplete = async (runtime) => {
+    if (!user?.id) {
+      return;
+    }
+
+    try {
+      setTutorialSaving(true);
+      await guidedTutorialInteractor.completeLearningCatalogTutorial(user.id, runtime.tutorial.id);
+    } catch (error) {
+      console.error(`Error saving tutorial completion:${error}`);
+    } finally {
+      setTutorialSaving(false);
     }
   };
 
@@ -91,6 +109,11 @@ export function Learn() {
   return (
     <div className="page">
       <AdaptiveLearningRecommendations viewModel={adaptiveLearningCatalog} loading={adaptiveLearningLoading} />
+      <AdaptiveGuidedTutorial
+        runtime={adaptiveLearningCatalog?.guidedTutorial}
+        loading={tutorialSaving}
+        onComplete={handleTutorialComplete}
+      />
       <AdaptiveHelpHintPanel hint={adaptiveLearningCatalog?.contextualHelpHint} loading={adaptiveLearningLoading} />
 
       <form
@@ -102,6 +125,7 @@ export function Learn() {
       >
         <div>
           <input
+            data-guided-tutorial-anchor="learning-modules-search-input"
             className="priceSearchBar"
             type="text"
             ref={searchRef}
@@ -113,7 +137,7 @@ export function Learn() {
         <div>&nbsp;</div>
         <div>
           <span>Filter by: </span>
-          <select ref={filterRef} onChange={selectData}>
+          <select ref={filterRef} onChange={selectData} data-guided-tutorial-anchor="learning-modules-filter-select">
             <option value="">Select a Category...</option>
             <option value="Stock">Stocks</option>
             <option value="Index">Index Funds</option>
@@ -125,7 +149,7 @@ export function Learn() {
         </div>
       </form>
 
-      <section className="learning-modules-list">
+      <section className="learning-modules-list" data-guided-tutorial-anchor="learning-modules-results">
         {state.modules ? (
           state.modules.map((module, index) => (
             <article key={index} className="learning-modules-list__card">

@@ -17,6 +17,7 @@ describe('adaptive learning catalog UI integration', () => {
     expect(viewModel.banner.title).toContain('learning foundations');
     expect(viewModel.cards).toHaveLength(3);
     expect(viewModel.contextualHelpHint?.assetId).toBe('help-learning-modules-filters');
+    expect(viewModel.guidedTutorial?.tutorial.id).toBe('tutorial-learning-modules-search');
     expect(viewModel.cards[0].rationale.length).toBeGreaterThan(0);
     expect(viewModel.recommendationResult.featureGovernance.deemphasizedFeatureIds.length).toBeGreaterThanOrEqual(0);
   });
@@ -79,6 +80,7 @@ describe('adaptive learning catalog UI integration', () => {
     expect(viewModel.cards[0].graphReasons[0]).toContain('Graph match');
     expect(viewModel.banner.title).toBe('Graph-backed learning recommendations');
     expect(viewModel.contextualHelpHint?.assetId).toBe('help-learning-modules-filters');
+    expect(viewModel.guidedTutorial?.tutorial.id).toBe('tutorial-learning-modules-search');
     expect(viewModel.contextualHelpHint?.graphReasons[0]).toContain('Graph match');
   });
 });
