@@ -1,6 +1,6 @@
 /** @jest-environment node */
 
-const { IPC_CHANNELS } = require('../../IPC/channels');
+const { IPC_CHANNELS } = require('../../shared/ipc/channels');
 const { registerOutboundHandlers } = require('../../main/ipc/registerOutboundHandlers');
 
 describe('registerOutboundHandlers', () => {

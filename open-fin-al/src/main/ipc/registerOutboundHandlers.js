@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle } = require('../../shared/ipc');
 
 function registerOutboundHandlers({ ipcMain, outboundServices }) {
   registerHandle(ipcMain, ipcContracts.outbound.alphaVantage.marketStatus, ({ apiKey }) => {

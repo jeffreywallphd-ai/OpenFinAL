@@ -1,25 +1,23 @@
-import { Field } from '../Field';
-import { IEntity } from '../IEntity';
+import { Field } from '../../Entity/Field';
+import { IEntity } from '../../Entity/IEntity';
 import { IRequestModel } from '../../Gateway/Request/IRequestModel';
 import { IResponseModel } from '../../Gateway/Response/IResponseModel';
 
-export class StockTimeSeries implements IEntity {
+export class StockSearchCriteria implements IEntity {
   fields: Map<string, Field> = new Map();
 
   constructor() {
+    this.fields.set('keyword', new Field('keyword', 'string', null));
     this.fields.set('ticker', new Field('ticker', 'string', null));
     this.fields.set('companyName', new Field('companyName', 'string', null));
     this.fields.set('cik', new Field('cik', 'string', null));
+    this.fields.set('isSP500', new Field('isSP500', 'integer', null));
     this.fields.set('interval', new Field('interval', 'string', null));
-    this.fields.set('startDate', new Field('startDate', 'date', null));
-    this.fields.set('endDate', new Field('endDate', 'date', null));
-    this.fields.set('quotePrice', new Field('quotePrice', 'float', null));
-    this.fields.set('data', new Field('data', 'array', null));
     this.fields.set('key', new Field('key', 'string', null));
   }
 
   fillWithRequest(_requestModel: IRequestModel): void {
-    throw new Error('StockTimeSeries should be populated through a stock use-case mapper.');
+    throw new Error('StockSearchCriteria should be populated through a stock use-case mapper.');
   }
 
   fillWithResponse(_responseModel: IResponseModel): void {

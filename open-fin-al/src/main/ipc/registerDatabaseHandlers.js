@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle } = require('../../shared/ipc');
 
 function registerDatabaseHandlers({ ipcMain, databaseService }) {
   const registerQuery = (contract, mode, parameterField = 'parameters') => {

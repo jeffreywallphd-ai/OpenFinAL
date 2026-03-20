@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle } = require('../../shared/ipc');
 
 function registerConfigHandlers({ ipcMain, configService }) {
   registerHandle(ipcMain, ipcContracts.config.getUsername, () => configService.getUsername());

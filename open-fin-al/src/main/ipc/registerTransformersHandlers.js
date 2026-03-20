@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle } = require('../../shared/ipc');
 
 function registerTransformersHandlers({ ipcMain, modelRuntimeService }) {
   registerHandle(ipcMain, ipcContracts.transformers.runTextGeneration, ({ model, prompt, params }) => {

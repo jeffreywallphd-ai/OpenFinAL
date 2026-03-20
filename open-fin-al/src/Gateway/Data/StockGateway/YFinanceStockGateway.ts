@@ -1,6 +1,6 @@
 import { IEntity } from '../../../Entity/IEntity';
 import { Asset } from '../../../Entity/Asset';
-import { StockTimeSeries } from '../../../Entity/Stock/StockTimeSeries';
+import { StockTimeSeries } from '../../../domain/stock/StockTimeSeries';
 import { IYahooFinanceClient } from '../../../application/services/IYahooFinanceClient';
 import { ElectronYahooFinanceClient } from '../../../infrastructure/electron/ElectronYahooFinanceClient';
 import { IKeylessDataGateway } from '../IKeylessDataGateway';

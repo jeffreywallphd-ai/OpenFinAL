@@ -1,5 +1,5 @@
 import { Asset } from "../../../Entity/Asset";
-import { StockTimeSeries } from "../../../Entity/Stock/StockTimeSeries";
+import { StockTimeSeries } from "../../../domain/stock/StockTimeSeries";
 import {IEntity} from "../../../Entity/IEntity";
 import {IKeyedDataGateway} from "../IKeyedDataGateway";
 import { APIEndpoint } from "../../../Entity/APIEndpoint";

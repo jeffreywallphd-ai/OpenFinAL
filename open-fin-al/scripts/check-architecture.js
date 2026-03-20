@@ -10,6 +10,11 @@ const aliasMap = {
   '@DataGateway/': 'Gateway/Data/',
   '@Interactor/': 'Interactor/',
   '@View/': 'View/',
+  '@domain/': 'domain/',
+  '@application/': 'application/',
+  '@infrastructure/': 'infrastructure/',
+  '@ui/': 'ui/',
+  '@shared/': 'shared/',
 };
 
 const files = collectFiles(srcRoot).filter((filePath) => {
@@ -28,17 +33,22 @@ const rules = [
       path.join(srcRoot, 'main') + path.sep,
       path.join(srcRoot, 'View') + path.sep,
       path.join(srcRoot, 'infrastructure') + path.sep,
+      path.join(srcRoot, 'ui') + path.sep,
     ],
     forbidPackages: ['electron'],
     forbidWindow: true,
   },
   {
     name: 'Application service definitions must stay framework-agnostic',
-    filePrefix: path.join(srcRoot, 'application') + path.sep,
+    filePrefixes: [
+      path.join(srcRoot, 'application') + path.sep,
+      path.join(srcRoot, 'domain') + path.sep,
+    ],
     forbidImportsFrom: [
       path.join(srcRoot, 'main') + path.sep,
       path.join(srcRoot, 'View') + path.sep,
       path.join(srcRoot, 'infrastructure') + path.sep,
+      path.join(srcRoot, 'ui') + path.sep,
     ],
     forbidPackages: ['electron'],
     forbidWindow: true,
@@ -54,6 +64,7 @@ const rules = [
       path.join(srcRoot, 'Utility') + path.sep,
       path.join(srcRoot, 'application') + path.sep,
       path.join(srcRoot, 'infrastructure') + path.sep,
+      path.join(srcRoot, 'ui') + path.sep,
     ],
   },
   {
@@ -66,6 +77,7 @@ const rules = [
       path.join(srcRoot, 'Utility') + path.sep,
       path.join(srcRoot, 'application') + path.sep,
       path.join(srcRoot, 'infrastructure') + path.sep,
+      path.join(srcRoot, 'ui') + path.sep,
     ],
     forbidImportsFrom: [path.join(srcRoot, 'main') + path.sep],
   },

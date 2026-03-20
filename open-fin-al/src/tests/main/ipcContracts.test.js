@@ -1,13 +1,13 @@
 /** @jest-environment node */
 
-const { IPC_CHANNELS } = require('../../IPC/channels');
+const { IPC_CHANNELS } = require('../../shared/ipc/channels');
 const {
   invokeContract,
   ipcContracts,
   registerHandle,
   registerListener,
   sendContract,
-} = require('../../IPC/contracts');
+} = require('../../shared/ipc');
 
 describe('IPC contracts', () => {
   it('serializes preload invocations with shared channels', async () => {

@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle } = require('../../shared/ipc');
 
 function registerVaultHandlers({ ipcMain, secretService, certificateService }) {
   registerHandle(ipcMain, ipcContracts.vault.getSecret, ({ key }) => secretService.getSecret(key));

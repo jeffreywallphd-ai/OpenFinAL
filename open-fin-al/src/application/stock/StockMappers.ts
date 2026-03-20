@@ -1,6 +1,6 @@
 import { IEntity } from '../../Entity/IEntity';
-import { StockSearchCriteria } from '../../Entity/Stock/StockSearchCriteria';
-import { StockTimeSeries } from '../../Entity/Stock/StockTimeSeries';
+import { StockSearchCriteria } from '../../domain/stock/StockSearchCriteria';
+import { StockTimeSeries } from '../../domain/stock/StockTimeSeries';
 import {
   StockLookupInputDto,
   StockLookupResultDto,
