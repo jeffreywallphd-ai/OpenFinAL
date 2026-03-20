@@ -4,3 +4,5 @@ export { AdaptiveLearningPath } from './AdaptiveLearningPath';
 export { AdaptiveTradeWorkbenchBanner } from './AdaptiveTradeWorkbenchBanner';
 export { AdaptiveLearningRecommendations } from './AdaptiveLearningRecommendations';
 export { useAdaptiveLearningCatalogRecommendations } from './useAdaptiveLearningCatalogRecommendations';
+
+export { AdaptiveGuidedTutorial } from './AdaptiveGuidedTutorial';

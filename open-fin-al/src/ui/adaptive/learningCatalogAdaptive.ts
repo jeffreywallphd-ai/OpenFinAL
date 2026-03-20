@@ -2,6 +2,7 @@ import { buildAdaptiveGraphSyncPayload } from '@application/adaptive-learning/ad
 import { bootstrapAdaptiveFeatures } from '@application/adaptive-learning/bootstrapAdaptiveFeatures';
 import { bootstrapAdaptiveLearningContent } from '@application/adaptive-learning/bootstrapAdaptiveLearningContent';
 import { createDefaultLearnerProfile } from '@application/adaptive-learning/learnerProfile';
+import { buildGuidedTutorialRuntime, GuidedTutorialRuntime } from '@application/adaptive-learning/guidedTutorials';
 import { IAdaptiveGraphRepository } from '@application/services/IAdaptiveGraphRepository';
 import { ILearnerProfileStore } from '@application/services/ILearnerProfileStore';
 import {
@@ -28,6 +29,8 @@ export interface AdaptiveLearningCatalogRuntime {
   hasLearnerProfile: boolean;
   graphSynced: boolean;
   learnerProfile: LearnerProfile;
+  guidedTutorial: GuidedTutorialRuntime | null;
+  graphRecommendations: AdaptiveGraphAssetRecommendation[];
   banner: AdaptiveLearningCatalogBanner;
   recommendationResult: AdaptiveLearningRecommendationResult;
   contextualHelpHint: AdaptiveHelpHintSelectionCandidate | null;
@@ -54,6 +57,8 @@ export interface AdaptiveLearningCatalogViewModel {
   hasLearnerProfile: boolean;
   graphSynced: boolean;
   learnerProfile: LearnerProfile;
+  guidedTutorial: GuidedTutorialRuntime | null;
+  graphRecommendations: AdaptiveGraphAssetRecommendation[];
   banner: AdaptiveLearningCatalogBanner;
   recommendationResult: AdaptiveLearningRecommendationResult;
   contextualHelpHint: AdaptiveContextualHelpHintViewModel | null;
@@ -105,6 +110,31 @@ function buildCatalogContextualHelpHint(
   );
 }
 
+function buildCatalogGuidedTutorial(
+  profile: LearnerProfile,
+  recommendationResult: AdaptiveLearningRecommendationResult,
+  learningAssets: ReturnType<typeof getCatalogAssets>['learningAssets'],
+  features: ReturnType<typeof getCatalogAssets>['features'],
+  graphRecommendations: AdaptiveGraphAssetRecommendation[],
+): GuidedTutorialRuntime | null {
+  const tutorial = learningAssets.find((asset): asset is Extract<(typeof learningAssets)[number], { kind: 'tutorial' }> => asset.id === 'tutorial-learning-modules-search' && asset.kind === 'tutorial');
+  const feature = features.find((asset) => asset.id === 'feature-learning-modules-catalog');
+
+  if (!tutorial || !feature) {
+    return null;
+  }
+
+  return buildGuidedTutorialRuntime({
+    profile,
+    tutorial,
+    tutorialDecision: recommendationResult.decisionsByAssetId[tutorial.id],
+    feature,
+    featureDecision: recommendationResult.decisionsByAssetId[feature.id],
+    featureContextId: feature.id,
+    graphRecommendations,
+  });
+}
+
 function buildBanner(
   hasLearnerProfile: boolean,
   graphSynced: boolean,
@@ -140,6 +170,7 @@ function buildBanner(
 export function buildAdaptiveLearningCatalogViewModel(runtime: AdaptiveLearningCatalogRuntime): AdaptiveLearningCatalogViewModel {
   return {
     ...runtime,
+    guidedTutorial: runtime.guidedTutorial,
     contextualHelpHint: runtime.contextualHelpHint
       ? {
           assetId: runtime.contextualHelpHint.asset.id,
@@ -188,11 +219,14 @@ export function buildAdaptiveLearningCatalogRuntime({
     limit: 3,
   });
   const contextualHelpHint = buildCatalogContextualHelpHint(profile, features, learningAssets, graphRecommendations);
+  const guidedTutorial = buildCatalogGuidedTutorial(profile, recommendationResult, learningAssets, features, graphRecommendations);
 
   return {
     hasLearnerProfile,
     graphSynced: graphRecommendations.length > 0,
     learnerProfile: profile,
+    graphRecommendations,
+    guidedTutorial,
     banner: buildBanner(hasLearnerProfile, graphRecommendations.length > 0, recommendationResult),
     recommendationResult,
     contextualHelpHint,
