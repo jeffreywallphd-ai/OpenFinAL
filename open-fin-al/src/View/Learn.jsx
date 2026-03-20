@@ -9,7 +9,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import { useHeader } from './App/LoadedLayout';
 import { DataContext } from './App';
-import { AdaptiveLearningRecommendations, useAdaptiveLearningCatalogRecommendations } from '@ui/adaptive';
+import { AdaptiveHelpHintPanel, AdaptiveLearningRecommendations, useAdaptiveLearningCatalogRecommendations } from '@ui/adaptive';
 
 export function Learn() {
   const { setHeader } = useHeader();
@@ -91,6 +91,7 @@ export function Learn() {
   return (
     <div className="page">
       <AdaptiveLearningRecommendations viewModel={adaptiveLearningCatalog} loading={adaptiveLearningLoading} />
+      <AdaptiveHelpHintPanel hint={adaptiveLearningCatalog?.contextualHelpHint} loading={adaptiveLearningLoading} />
 
       <form
         className="learning-modules-search-form"

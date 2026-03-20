@@ -16,6 +16,7 @@ describe('adaptive learning catalog UI integration', () => {
 
     expect(viewModel.banner.title).toContain('learning foundations');
     expect(viewModel.cards).toHaveLength(3);
+    expect(viewModel.contextualHelpHint?.assetId).toBe('help-learning-modules-filters');
     expect(viewModel.cards[0].rationale.length).toBeGreaterThan(0);
     expect(viewModel.recommendationResult.featureGovernance.deemphasizedFeatureIds.length).toBeGreaterThanOrEqual(0);
   });
@@ -37,6 +38,19 @@ describe('adaptive learning catalog UI integration', () => {
       profile,
       hasLearnerProfile: true,
       graphRecommendations: [
+        {
+          assetId: 'feature-learning-modules-catalog',
+          kind: 'feature',
+          title: 'Learning modules catalog',
+          category: 'planning',
+          knowledgeLevel: 'beginner',
+          relevanceScore: 7,
+          reasons: ['Graph match: the learner is actively browsing the module catalog.'],
+          tutorialAssetIds: ['tutorial-learning-modules-search'],
+          helpAssetIds: ['help-learning-modules-filters'],
+          prerequisiteAssetIds: [],
+          completed: false,
+        },
         {
           assetId: 'module-risk-basics',
           kind: 'learning-module',
@@ -64,5 +78,7 @@ describe('adaptive learning catalog UI integration', () => {
     );
     expect(viewModel.cards[0].graphReasons[0]).toContain('Graph match');
     expect(viewModel.banner.title).toBe('Graph-backed learning recommendations');
+    expect(viewModel.contextualHelpHint?.assetId).toBe('help-learning-modules-filters');
+    expect(viewModel.contextualHelpHint?.graphReasons[0]).toContain('Graph match');
   });
 });

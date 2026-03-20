@@ -3667,6 +3667,46 @@ body.dark-mode .logout-item:hover {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.adaptive-help-hint-panel {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(239, 246, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.adaptive-help-hint-panel.state-deemphasized {
+  opacity: 0.88;
+}
+
+.adaptive-help-hint-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.adaptive-help-hint-panel__header h3,
+.adaptive-help-hint-panel__body {
+  margin: 0;
+}
+
+.adaptive-help-hint-panel__reasons {
+  margin: 0.75rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.adaptive-help-hint-panel__graph {
+  margin-top: 0.75rem;
+  color: var(--text-color-medium);
+}
+
+.dark-mode .adaptive-help-hint-panel {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(96, 165, 250, 0.25);
+}
+
 .adaptive-learning-recommendation-card {
   border: 1px solid rgba(59, 130, 246, 0.18);
   border-radius: 18px;

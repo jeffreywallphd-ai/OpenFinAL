@@ -36,6 +36,23 @@ export const tradeWorkbenchOrderEntryHint = registerAdaptiveLearningContent(
     },
     supportedModalities: ['reference'],
     hintForAssetId: 'feature-trade-workbench',
+    contextualGuidance: {
+      contextIds: ['feature-trade-workbench', 'tool-trade-order-entry', 'tool-trade-chart-review'],
+      exposureRules: [
+        {
+          type: 'knowledge-level-at-least',
+          knowledgeLevel: 'intermediate',
+        },
+      ],
+      suppressionRules: [
+        {
+          type: 'completed-asset',
+          assetId: 'tutorial-trade-workbench-first-order',
+        },
+      ],
+      displayPriority: 10,
+      maxDisplayCount: 2,
+    },
     recommendedNextSteps: [
       {
         assetId: 'feature-trade-workbench',

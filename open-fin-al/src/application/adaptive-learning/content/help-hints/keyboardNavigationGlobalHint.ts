@@ -36,6 +36,16 @@ export const keyboardNavigationGlobalHint = registerAdaptiveLearningContent(
     },
     supportedModalities: ['reference'],
     hintForAssetId: 'feature-learning-modules-catalog',
+    contextualGuidance: {
+      contextIds: [
+        'feature-learning-modules-catalog',
+        'feature-trade-workbench',
+        'tool-learning-modules-search',
+        'tool-trade-order-entry',
+      ],
+      displayPriority: 2,
+      maxDisplayCount: 4,
+    },
   },
   {
     source: 'src/renderer.js',

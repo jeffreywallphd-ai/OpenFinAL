@@ -6,3 +6,4 @@ export * from './learningContentRegistry';
 
 export * from './graph';
 export * from './recommendationEngine';
+export * from './helpHintSelectionService';
