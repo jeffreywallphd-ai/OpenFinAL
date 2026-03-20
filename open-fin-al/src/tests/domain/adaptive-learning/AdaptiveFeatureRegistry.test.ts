@@ -35,6 +35,7 @@ describe('adaptive feature registry', () => {
       isUserFacing: true,
       relationships: {
         relatedAssetIds: [],
+        relatedFeatureIds: [],
         tutorialAssetIds: ['tutorial-registry-test'],
         helpAssetIds: ['help-registry-test'],
         accessibilityAssetIds: ['help-keyboard-navigation-global'],
@@ -79,6 +80,7 @@ describe('adaptive feature registry', () => {
       isUserFacing: true,
       relationships: {
         relatedAssetIds: [],
+        relatedFeatureIds: [],
         tutorialAssetIds: [],
         helpAssetIds: [],
         accessibilityAssetIds: [],

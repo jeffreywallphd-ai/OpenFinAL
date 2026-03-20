@@ -24,6 +24,7 @@ export const learningModulesFeature = registerAdaptiveFeature(
     isUserFacing: true,
     relationships: {
       relatedAssetIds: ['feature-trade-workbench', 'feature-portfolio-dashboard'],
+      relatedFeatureIds: ['feature-trade-workbench', 'feature-portfolio-dashboard'],
       tutorialAssetIds: ['tutorial-learning-modules-search'],
       helpAssetIds: ['help-learning-modules-filters'],
       accessibilityAssetIds: ['help-keyboard-navigation-global'],

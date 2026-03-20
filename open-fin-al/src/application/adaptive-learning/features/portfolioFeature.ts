@@ -25,6 +25,7 @@ export const portfolioFeature = registerAdaptiveFeature(
     isUserFacing: true,
     relationships: {
       relatedAssetIds: ['feature-trade-workbench'],
+      relatedFeatureIds: ['feature-trade-workbench'],
       tutorialAssetIds: ['tutorial-portfolio-dashboard-walkthrough'],
       helpAssetIds: ['help-portfolio-dashboard-overview'],
       accessibilityAssetIds: ['help-keyboard-navigation-global'],

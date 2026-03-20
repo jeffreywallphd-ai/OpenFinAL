@@ -2,9 +2,11 @@ import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { bootstrapAdaptiveFeatures } from './application/adaptive-learning/bootstrapAdaptiveFeatures';
+import { bootstrapAdaptiveLearningContent } from './application/adaptive-learning/bootstrapAdaptiveLearningContent';
 import { App } from './View/App';
 
 bootstrapAdaptiveFeatures();
+bootstrapAdaptiveLearningContent();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

@@ -24,6 +24,7 @@ export const aiChatAssistantFeature = registerAdaptiveFeature(
     isUserFacing: true,
     relationships: {
       relatedAssetIds: ['feature-learning-modules-catalog', 'feature-investment-news'],
+      relatedFeatureIds: ['feature-learning-modules-catalog', 'feature-investment-news'],
       tutorialAssetIds: ['tutorial-ai-chat-assistant-prompts'],
       helpAssetIds: ['help-ai-chat-assistant-safety'],
       accessibilityAssetIds: ['help-keyboard-navigation-global'],
