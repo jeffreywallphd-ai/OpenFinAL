@@ -17,6 +17,7 @@ const { registerConfigHandlers } = require('./ipc/registerConfigHandlers');
 const { registerVaultHandlers } = require('./ipc/registerVaultHandlers');
 const { registerFileHandlers } = require('./ipc/registerFileHandlers');
 const { registerDatabaseHandlers } = require('./ipc/registerDatabaseHandlers');
+const { registerAdaptiveGraphHandlers } = require('./ipc/registerAdaptiveGraphHandlers');
 const { registerYahooHandlers } = require('./ipc/registerYahooHandlers');
 const { registerOutboundHandlers } = require('./ipc/registerOutboundHandlers');
 const { registerTransformersHandlers } = require('./ipc/registerTransformersHandlers');
@@ -33,6 +34,8 @@ const { createYahooFinanceService } = require('./services/yahooFinanceService');
 const { createOutboundServices } = require('./services/outbound/createOutboundServices');
 const { createSecretService } = require('./services/secretService');
 const { createPuppeteerService } = require('./services/puppeteerService');
+const { createAdaptiveGraphService } = require('./services/adaptiveGraph/createAdaptiveGraphService');
+const { createNeo4jAdaptiveGraphRuntime } = require('./services/adaptiveGraph/createNeo4jAdaptiveGraphRuntime');
 
 let yahooFinanceModule;
 function getYF() {
@@ -41,6 +44,15 @@ function getYF() {
   }
 
   return yahooFinanceModule;
+}
+
+let neo4jModule;
+function getNeo4j() {
+  if (!neo4jModule) {
+    neo4jModule = import('neo4j-driver').then((module) => module.default || module);
+  }
+
+  return neo4jModule;
 }
 
 function deleteFolderRecursiveSync(folderPath) {
@@ -129,6 +141,22 @@ function bootstrapMainProcess() {
     axios,
     certificateService,
   });
+  const adaptiveGraphRuntime = createNeo4jAdaptiveGraphRuntime({
+    createDriver: async ({ uri, username, password }) => {
+      const neo4j = await getNeo4j();
+      return neo4j.driver(uri, neo4j.auth.basic(username, password));
+    },
+    config: {
+      enabled: process.env.NEO4J_ENABLED !== 'false',
+      uri: process.env.NEO4J_URI || 'bolt://127.0.0.1:7687',
+      username: process.env.NEO4J_USERNAME || process.env.NEO4J_USER || 'neo4j',
+      password: process.env.NEO4J_PASSWORD || 'openfinal',
+      database: process.env.NEO4J_DATABASE || undefined,
+    },
+  });
+  const adaptiveGraphService = createAdaptiveGraphService({
+    graphRuntime: adaptiveGraphRuntime,
+  });
   const puppeteerService = createPuppeteerService({ puppeteer });
   const proxyServer = createProxyServer({
     express,
@@ -141,6 +169,7 @@ function bootstrapMainProcess() {
   registerVaultHandlers({ ipcMain, secretService, certificateService });
   registerFileHandlers({ ipcMain, fileService });
   registerDatabaseHandlers({ ipcMain, databaseService });
+  registerAdaptiveGraphHandlers({ ipcMain, adaptiveGraphService });
   registerYahooHandlers({ ipcMain, yahooFinanceService });
   registerOutboundHandlers({ ipcMain, outboundServices });
   registerTransformersHandlers({ ipcMain, modelRuntimeService });
@@ -200,6 +229,7 @@ function bootstrapMainProcess() {
 
   app.on('before-quit', () => {
     databaseService.closeConnection();
+    adaptiveGraphRuntime.close?.();
     proxyServer.stop?.();
   });
 

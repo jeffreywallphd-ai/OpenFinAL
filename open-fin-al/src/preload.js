@@ -81,6 +81,12 @@ contextBridge.exposeInMainWorld('config', {
   getUsername: () => invokeContract(ipcRenderer, ipcContracts.config.getUsername),
 });
 
+contextBridge.exposeInMainWorld('adaptiveGraph', {
+  syncAdaptiveLearningGraph: (payload) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.syncAdaptiveLearningGraph, payload),
+  getLearnerSnapshot: (learnerId) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.getLearnerSnapshot, learnerId),
+  findRelevantAssets: (query) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.findRelevantAssets, query),
+});
+
 contextBridge.exposeInMainWorld('database', {
   SQLiteExists: () => invokeContract(ipcRenderer, ipcContracts.database.sqliteExists),
   SQLiteInit: (schema) => invokeContract(ipcRenderer, ipcContracts.database.sqliteInit, schema),
