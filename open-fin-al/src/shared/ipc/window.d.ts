@@ -1,4 +1,5 @@
 import type {
+  AdaptiveGraphBridge,
   ConfigBridge,
   ConvertBridge,
   DatabaseBridge,
@@ -15,6 +16,7 @@ import type {
 
 declare global {
   interface Window {
+    adaptiveGraph: AdaptiveGraphBridge;
     config: ConfigBridge;
     convert: ConvertBridge;
     database: DatabaseBridge;

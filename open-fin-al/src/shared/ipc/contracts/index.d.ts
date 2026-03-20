@@ -106,6 +106,12 @@ export interface VaultBridge {
   refreshCert(hostname: string): Awaitable<any>;
 }
 
+export interface AdaptiveGraphBridge {
+  syncAdaptiveLearningGraph(payload: unknown): Awaitable<any>;
+  getLearnerSnapshot(learnerId: string): Awaitable<any>;
+  findRelevantAssets(query: Record<string, unknown>): Awaitable<any>;
+}
+
 export interface DatabaseBridge {
   SQLiteExists(): Awaitable<any>;
   SQLiteInit(schema: string): Awaitable<any>;

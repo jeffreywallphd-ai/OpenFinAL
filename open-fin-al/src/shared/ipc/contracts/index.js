@@ -37,6 +37,18 @@ function assertString(value, fieldName) {
   return value;
 }
 
+function assertOptionalBoolean(value, fieldName) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== 'boolean') {
+    throw new TypeError(`${fieldName} must be a boolean when provided`);
+  }
+
+  return value;
+}
+
 function assertOptionalRecord(value, fieldName) {
   if (value === undefined) {
     return undefined;
@@ -127,6 +139,43 @@ const ipcContracts = Object.freeze({
       validate: (payload) => ({
         hostname: assertString(assertRecord(payload, 'refreshCertRequest').hostname, 'refreshCertRequest.hostname'),
       }),
+    }),
+  }),
+  adaptiveGraph: Object.freeze({
+    syncAdaptiveLearningGraph: createContract({
+      channel: IPC_CHANNELS.adaptiveGraph.syncAdaptiveLearningGraph,
+      serialize: (payload) => payload,
+      validate: (payload) => assertRecord(payload, 'adaptiveGraphSyncRequest'),
+    }),
+    getLearnerSnapshot: createContract({
+      channel: IPC_CHANNELS.adaptiveGraph.getLearnerSnapshot,
+      serialize: (learnerId) => ({ learnerId }),
+      validate: (payload) => ({
+        learnerId: assertString(assertRecord(payload, 'adaptiveGraphSnapshotRequest').learnerId, 'adaptiveGraphSnapshotRequest.learnerId'),
+      }),
+    }),
+    findRelevantAssets: createContract({
+      channel: IPC_CHANNELS.adaptiveGraph.findRelevantAssets,
+      serialize: (query) => query,
+      validate: (payload) => {
+        const query = assertRecord(payload, 'adaptiveGraphQuery');
+        if (query.limit !== undefined && (!Number.isInteger(query.limit) || query.limit < 1)) {
+          throw new TypeError('adaptiveGraphQuery.limit must be a positive integer when provided');
+        }
+        if (query.kinds !== undefined && !Array.isArray(query.kinds)) {
+          throw new TypeError('adaptiveGraphQuery.kinds must be an array when provided');
+        }
+        if (query.categories !== undefined && !Array.isArray(query.categories)) {
+          throw new TypeError('adaptiveGraphQuery.categories must be an array when provided');
+        }
+        return {
+          learnerId: assertString(query.learnerId, 'adaptiveGraphQuery.learnerId'),
+          limit: query.limit,
+          kinds: query.kinds,
+          categories: query.categories,
+          includeCompleted: assertOptionalBoolean(query.includeCompleted, 'adaptiveGraphQuery.includeCompleted'),
+        };
+      },
     }),
   }),
   database: Object.freeze({

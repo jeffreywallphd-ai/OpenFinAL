@@ -26,6 +26,11 @@ const IPC_CHANNELS = Object.freeze({
     sqliteUpdate: 'sqlite-update',
     sqliteDelete: 'sqlite-delete',
   }),
+  adaptiveGraph: Object.freeze({
+    syncAdaptiveLearningGraph: 'adaptive-graph:sync',
+    getLearnerSnapshot: 'adaptive-graph:get-learner-snapshot',
+    findRelevantAssets: 'adaptive-graph:find-relevant-assets',
+  }),
   yahooFinance: Object.freeze({
     chart: 'yahoo-chart',
     search: 'yahoo-search',
