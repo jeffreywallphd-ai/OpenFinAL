@@ -149,6 +149,7 @@ Those areas are good candidates for incremental refactoring, but the repository 
 - `docs/architecture/dependency-injection-stock-slice.md`
 - `docs/architecture/database-architecture.md`
 - `../../docs/architecture/build-and-packaging.md`
+- `../../docs/architecture/adaptive-learning-foundation.md`
 - `docs/architecture/model-runtime-service.md`
 - `docs/architecture/decisions/modular-main-process.md`
 - `docs/architecture/decisions/shared-ipc-contracts.md`
