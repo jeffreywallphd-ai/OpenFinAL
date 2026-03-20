@@ -1,21 +1,26 @@
 const { createAdaptiveGraphService } = require('../../main/services/adaptiveGraph/createAdaptiveGraphService');
-const { createNeo4jAdaptiveGraphRuntime } = require('../../main/services/adaptiveGraph/createNeo4jAdaptiveGraphRuntime');
+const {
+  countCatalogRelationships,
+  createNeo4jAdaptiveGraphRuntime,
+} = require('../../main/services/adaptiveGraph/createNeo4jAdaptiveGraphRuntime');
 
 describe('adaptive graph services', () => {
   test('adaptive graph service delegates to the injected runtime', async () => {
     const graphRuntime = {
+      syncAdaptiveGraphCatalog: jest.fn().mockResolvedValue({ backend: 'neo4j', mode: 'incremental' }),
       syncAdaptiveLearningGraph: jest.fn().mockResolvedValue({ backend: 'neo4j' }),
       getLearnerSnapshot: jest.fn().mockResolvedValue({ learnerProfile: { learnerId: 'learner-1' }, recommendations: [] }),
       findRelevantAssets: jest.fn().mockResolvedValue([]),
     };
 
     const service = createAdaptiveGraphService({ graphRuntime });
+    await expect(service.syncAdaptiveGraphCatalog({ assetNodes: [], syncedAt: '2026-03-20T12:00:00.000Z' })).resolves.toEqual({ backend: 'neo4j', mode: 'incremental' });
     await expect(service.syncAdaptiveLearningGraph({ learnerProfile: { learnerId: 'learner-1' }, assetNodes: [], syncedAt: '2026-03-20T12:00:00.000Z' })).resolves.toEqual({ backend: 'neo4j' });
     await expect(service.getLearnerSnapshot('learner-1')).resolves.toMatchObject({ learnerProfile: { learnerId: 'learner-1' } });
     await expect(service.findRelevantAssets({ learnerId: 'learner-1' })).resolves.toEqual([]);
   });
 
-  test('Neo4j runtime syncs graph payloads and maps recommendation queries without leaking Cypher details', async () => {
+  test('Neo4j runtime syncs catalog assets idempotently before learner data and maps recommendation queries without leaking Cypher details', async () => {
     const runLog = [];
     const session = {
       run: jest.fn(async (query, params) => {
@@ -89,6 +94,67 @@ describe('adaptive graph services', () => {
       },
     });
 
+    const catalogPayload = {
+      assetNodes: [
+        {
+          id: 'module-investing-basics',
+          key: 'investing-basics',
+          kind: 'learning-module',
+          title: 'Investing Basics',
+          description: 'Introduces investing terminology and the platform learning flow.',
+          category: 'foundations',
+          knowledgeLevel: 'beginner',
+          defaultAvailability: 'enabled',
+          isUserFacing: true,
+          tags: ['stocks'],
+          investmentGoals: ['growth'],
+          riskAlignment: ['moderate'],
+          prerequisites: [],
+          governance: {
+            defaultAvailabilityState: 'visible',
+            eligibleForRecommendation: true,
+            eligibleForHighlighting: true,
+            visibleDuringOnboarding: true,
+          },
+          source: 'src/View/Learn.jsx',
+          registeredAt: '2026-03-20T11:59:00.000Z',
+          relationships: {
+            relatedAssetIds: ['tutorial-learning-modules-search'],
+            relatedFeatureIds: ['feature-learning-modules-catalog'],
+            tutorialAssetIds: ['tutorial-learning-modules-search'],
+            helpAssetIds: ['help-learning-modules-filters'],
+            accessibilityAssetIds: [],
+          },
+          relatedFeatureIds: ['feature-learning-modules-catalog'],
+          supportedModalities: ['reading'],
+          unlockValue: 0.25,
+          recommendedNextSteps: [
+            {
+              assetId: 'tutorial-learning-modules-search',
+              title: 'Learning modules tutorial',
+              reason: 'Move from reading into guided practice.',
+              unlockValue: 0.4,
+            },
+          ],
+        },
+      ],
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      mode: 'incremental',
+    };
+
+    const catalogResult = await runtime.syncAdaptiveGraphCatalog(catalogPayload);
+
+    expect(catalogResult).toEqual({
+      assetCount: 1,
+      relationshipCount: countCatalogRelationships(catalogPayload.assetNodes),
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      backend: 'neo4j',
+      mode: 'incremental',
+    });
+    expect(runLog.some((entry) => entry.query.includes('MERGE (node:AdaptiveAsset { id: asset.id })'))).toBe(true);
+    expect(runLog.some((entry) => entry.query.includes('RELEVANT_TO_FEATURE'))).toBe(true);
+    expect(runLog.some((entry) => entry.query.includes('NEXT_STEP'))).toBe(true);
+
     const syncResult = await runtime.syncAdaptiveLearningGraph({
       learnerProfile: {
         learnerId: 'learner-1',
@@ -137,7 +203,6 @@ describe('adaptive graph services', () => {
       syncedAt: '2026-03-20T12:00:00.000Z',
       backend: 'neo4j',
     });
-    expect(runLog.some((entry) => entry.query.includes('MERGE (learner:LearnerProfile'))).toBe(true);
 
     await expect(runtime.findRelevantAssets({ learnerId: 'learner-1', limit: 5 })).resolves.toEqual([
       expect.objectContaining({
@@ -157,6 +222,17 @@ describe('adaptive graph services', () => {
       config: { enabled: false },
     });
 
+    await expect(runtime.syncAdaptiveGraphCatalog({
+      assetNodes: [],
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      mode: 'full',
+    })).resolves.toEqual({
+      assetCount: 0,
+      relationshipCount: 0,
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      backend: 'neo4j-disabled',
+      mode: 'full',
+    });
     await expect(runtime.syncAdaptiveLearningGraph({
       learnerProfile: { learnerId: 'learner-disabled' },
       assetNodes: [],

@@ -107,6 +107,7 @@ export interface VaultBridge {
 }
 
 export interface AdaptiveGraphBridge {
+  syncAdaptiveGraphCatalog(payload: unknown): Awaitable<any>;
   syncAdaptiveLearningGraph(payload: unknown): Awaitable<any>;
   getLearnerSnapshot(learnerId: string): Awaitable<any>;
   findRelevantAssets(query: Record<string, unknown>): Awaitable<any>;

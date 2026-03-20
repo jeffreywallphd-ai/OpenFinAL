@@ -4,12 +4,15 @@ import {
 import {
   AdaptiveGraphAssetQuery,
   AdaptiveGraphAssetRecommendation,
+  AdaptiveGraphCatalogSyncPayload,
+  AdaptiveGraphCatalogSyncResult,
   AdaptiveGraphLearnerSnapshot,
   AdaptiveGraphSyncPayload,
   AdaptiveGraphSyncResult,
 } from '@domain/adaptive-learning';
 
 interface OpenFinALAdaptiveGraphBridge {
+  syncAdaptiveGraphCatalog: (payload: AdaptiveGraphCatalogSyncPayload) => Promise<AdaptiveGraphCatalogSyncResult>;
   syncAdaptiveLearningGraph: (payload: AdaptiveGraphSyncPayload) => Promise<AdaptiveGraphSyncResult>;
   getLearnerSnapshot: (learnerId: string) => Promise<AdaptiveGraphLearnerSnapshot | null>;
   findRelevantAssets: (query: AdaptiveGraphAssetQuery) => Promise<AdaptiveGraphAssetRecommendation[]>;
@@ -18,6 +21,10 @@ interface OpenFinALAdaptiveGraphBridge {
 declare const window: Window & { adaptiveGraph: OpenFinALAdaptiveGraphBridge };
 
 export class ElectronAdaptiveGraphRepository implements IAdaptiveGraphRepository {
+  async syncAdaptiveGraphCatalog(payload: AdaptiveGraphCatalogSyncPayload): Promise<AdaptiveGraphCatalogSyncResult> {
+    return window.adaptiveGraph.syncAdaptiveGraphCatalog(payload);
+  }
+
   async syncAdaptiveLearningGraph(payload: AdaptiveGraphSyncPayload): Promise<AdaptiveGraphSyncResult> {
     return window.adaptiveGraph.syncAdaptiveLearningGraph(payload);
   }

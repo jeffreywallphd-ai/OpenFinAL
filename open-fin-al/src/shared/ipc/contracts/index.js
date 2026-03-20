@@ -142,6 +142,11 @@ const ipcContracts = Object.freeze({
     }),
   }),
   adaptiveGraph: Object.freeze({
+    syncAdaptiveGraphCatalog: createContract({
+      channel: IPC_CHANNELS.adaptiveGraph.syncAdaptiveGraphCatalog,
+      serialize: (payload) => payload,
+      validate: (payload) => assertRecord(payload, 'adaptiveGraphCatalogSyncRequest'),
+    }),
     syncAdaptiveLearningGraph: createContract({
       channel: IPC_CHANNELS.adaptiveGraph.syncAdaptiveLearningGraph,
       serialize: (payload) => payload,

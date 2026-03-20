@@ -27,6 +27,7 @@ const IPC_CHANNELS = Object.freeze({
     sqliteDelete: 'sqlite-delete',
   }),
   adaptiveGraph: Object.freeze({
+    syncAdaptiveGraphCatalog: 'adaptive-graph:sync-catalog',
     syncAdaptiveLearningGraph: 'adaptive-graph:sync',
     getLearnerSnapshot: 'adaptive-graph:get-learner-snapshot',
     findRelevantAssets: 'adaptive-graph:find-relevant-assets',

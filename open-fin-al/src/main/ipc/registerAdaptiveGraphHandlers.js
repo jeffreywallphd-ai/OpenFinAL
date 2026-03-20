@@ -3,6 +3,11 @@ const { ipcContracts, registerHandle } = require('../../shared/ipc');
 function registerAdaptiveGraphHandlers({ ipcMain, adaptiveGraphService }) {
   registerHandle(
     ipcMain,
+    ipcContracts.adaptiveGraph.syncAdaptiveGraphCatalog,
+    (payload) => adaptiveGraphService.syncAdaptiveGraphCatalog(payload),
+  );
+  registerHandle(
+    ipcMain,
     ipcContracts.adaptiveGraph.syncAdaptiveLearningGraph,
     (payload) => adaptiveGraphService.syncAdaptiveLearningGraph(payload),
   );
