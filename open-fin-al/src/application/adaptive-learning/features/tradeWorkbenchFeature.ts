@@ -1,6 +1,6 @@
-import { registerAdaptiveFeature } from '@domain/adaptive-learning';
+import { defineAdaptiveFeatureRegistration } from '../registration';
 
-export const tradeWorkbenchFeature = registerAdaptiveFeature(
+export const tradeWorkbenchFeature = defineAdaptiveFeatureRegistration(
   {
     id: 'feature-trade-workbench',
     key: 'trade-workbench',
@@ -39,7 +39,5 @@ export const tradeWorkbenchFeature = registerAdaptiveFeature(
       accessibilityAssetIds: ['help-keyboard-navigation-global'],
     },
   },
-  {
-    source: 'src/View/Stock.jsx',
-  },
+  'src/View/Stock.jsx',
 );

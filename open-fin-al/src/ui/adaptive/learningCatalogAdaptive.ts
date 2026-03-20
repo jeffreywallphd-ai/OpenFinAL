@@ -1,7 +1,11 @@
 import { buildAdaptiveGraphSyncPayload } from '@application/adaptive-learning/adaptiveGraphSnapshot';
-import { bootstrapAdaptiveFeatures } from '@application/adaptive-learning/bootstrapAdaptiveFeatures';
-import { bootstrapAdaptiveLearningContent } from '@application/adaptive-learning/bootstrapAdaptiveLearningContent';
-import { createDefaultLearnerProfile } from '@application/adaptive-learning/learnerProfile';
+import {
+  AdaptiveProfileCompleteness,
+  getAdaptiveCatalogAssets,
+  getAdaptiveProfileCompleteness,
+  normalizeAdaptiveGraphRecommendations,
+  normalizeLearnerProfile,
+} from '@application/adaptive-learning/adaptiveCatalog';
 import { buildGuidedTutorialRuntime, GuidedTutorialRuntime } from '@application/adaptive-learning/guidedTutorials';
 import { IAdaptiveGraphRepository } from '@application/services/IAdaptiveGraphRepository';
 import { ILearnerProfileStore } from '@application/services/ILearnerProfileStore';
@@ -12,8 +16,6 @@ import {
   AdaptiveLearningRecommendationResult,
   LearnerProfile,
   buildAdaptiveLearningRecommendations,
-  listAdaptiveFeatures,
-  listAdaptiveLearningContent,
   selectAdaptiveHelpHints,
 } from '@domain/adaptive-learning';
 import { ElectronAdaptiveGraphRepository } from '@infrastructure/electron/ElectronAdaptiveGraphRepository';
@@ -27,6 +29,7 @@ export interface AdaptiveLearningCatalogBanner {
 
 export interface AdaptiveLearningCatalogRuntime {
   hasLearnerProfile: boolean;
+  profileCompleteness: AdaptiveProfileCompleteness;
   graphSynced: boolean;
   learnerProfile: LearnerProfile;
   guidedTutorial: GuidedTutorialRuntime | null;
@@ -78,6 +81,7 @@ export interface AdaptiveLearningRecommendationCard {
 
 export interface AdaptiveLearningCatalogViewModel {
   hasLearnerProfile: boolean;
+  profileCompleteness: AdaptiveProfileCompleteness;
   graphSynced: boolean;
   learnerProfile: LearnerProfile;
   guidedTutorial: GuidedTutorialRuntime | null;
@@ -98,20 +102,10 @@ export interface AdaptiveContextualHelpHintViewModel {
   availabilityState: string;
 }
 
-function getCatalogAssets() {
-  bootstrapAdaptiveFeatures();
-  bootstrapAdaptiveLearningContent();
-
-  return {
-    features: listAdaptiveFeatures().map((entry) => entry.metadata),
-    learningAssets: listAdaptiveLearningContent().map((entry) => entry.metadata),
-  };
-}
-
 function buildCatalogContextualHelpHint(
   profile: LearnerProfile,
-  features: ReturnType<typeof getCatalogAssets>['features'],
-  learningAssets: ReturnType<typeof getCatalogAssets>['learningAssets'],
+  features: ReturnType<typeof getAdaptiveCatalogAssets>['features'],
+  learningAssets: ReturnType<typeof getAdaptiveCatalogAssets>['learningAssets'],
   graphRecommendations: AdaptiveGraphAssetRecommendation[],
 ): AdaptiveHelpHintSelectionCandidate | null {
   const helpHints = learningAssets.filter((asset) => asset.kind === 'help-hint');
@@ -136,8 +130,8 @@ function buildCatalogContextualHelpHint(
 function buildCatalogGuidedTutorial(
   profile: LearnerProfile,
   recommendationResult: AdaptiveLearningRecommendationResult,
-  learningAssets: ReturnType<typeof getCatalogAssets>['learningAssets'],
-  features: ReturnType<typeof getCatalogAssets>['features'],
+  learningAssets: ReturnType<typeof getAdaptiveCatalogAssets>['learningAssets'],
+  features: ReturnType<typeof getAdaptiveCatalogAssets>['features'],
   graphRecommendations: AdaptiveGraphAssetRecommendation[],
 ): GuidedTutorialRuntime | null {
   const tutorial = learningAssets.find((asset): asset is Extract<(typeof learningAssets)[number], { kind: 'tutorial' }> => asset.id === 'tutorial-learning-modules-search' && asset.kind === 'tutorial');
@@ -159,16 +153,25 @@ function buildCatalogGuidedTutorial(
 }
 
 function buildBanner(
-  hasLearnerProfile: boolean,
+  profileCompleteness: AdaptiveProfileCompleteness,
   graphSynced: boolean,
   recommendationResult: AdaptiveLearningRecommendationResult,
 ): AdaptiveLearningCatalogBanner {
-  if (!hasLearnerProfile) {
+  if (profileCompleteness === 'missing') {
     return {
       title: 'Start with the learning foundations',
       message:
         'These starter recommendations use catalog defaults. Completing the learner profile enables graph-backed ranking and stronger feature unlock guidance.',
       tone: 'info',
+    };
+  }
+
+  if (profileCompleteness === 'partial') {
+    return {
+      title: 'Finish the learner profile for stronger guidance',
+      message:
+        'Adaptive learning is using safe defaults because the saved profile is incomplete. Add knowledge level, risk preference, and goals to unlock more precise graph sync and recommendation ranking.',
+      tone: 'warning',
     };
   }
 
@@ -195,20 +198,15 @@ function describePrerequisite(prerequisite: AdaptiveLearningRecommendation['asse
 }
 
 export function buildAdaptiveLearningCatalogViewModel(runtime: AdaptiveLearningCatalogRuntime): AdaptiveLearningCatalogViewModel {
-  bootstrapAdaptiveFeatures();
-  bootstrapAdaptiveLearningContent();
-
-  const featuresById = listAdaptiveFeatures().reduce<Record<string, ReturnType<typeof listAdaptiveFeatures>[number]['metadata']>>((accumulator, entry) => {
-    accumulator[entry.metadata.id] = entry.metadata;
+  const { features, learningAssets } = getAdaptiveCatalogAssets();
+  const featuresById = features.reduce<Record<string, (typeof features)[number]>>((accumulator, feature) => {
+    accumulator[feature.id] = feature;
     return accumulator;
   }, {});
-  const learningAssetsById = listAdaptiveLearningContent().reduce<Record<string, ReturnType<typeof listAdaptiveLearningContent>[number]['metadata']>>(
-    (accumulator, entry) => {
-      accumulator[entry.metadata.id] = entry.metadata;
-      return accumulator;
-    },
-    {},
-  );
+  const learningAssetsById = learningAssets.reduce<Record<string, (typeof learningAssets)[number]>>((accumulator, asset) => {
+    accumulator[asset.id] = asset;
+    return accumulator;
+  }, {});
 
   return {
     ...runtime,
@@ -292,24 +290,28 @@ export function buildAdaptiveLearningCatalogRuntime({
   hasLearnerProfile: boolean;
   graphRecommendations?: AdaptiveGraphAssetRecommendation[];
 }): AdaptiveLearningCatalogRuntime {
-  const { features, learningAssets } = getCatalogAssets();
+  const normalizedProfile = normalizeLearnerProfile(profile, profile.learnerId);
+  const profileCompleteness = getAdaptiveProfileCompleteness(normalizedProfile, hasLearnerProfile);
+  const { features, learningAssets, assetLookup } = getAdaptiveCatalogAssets();
+  const normalizedGraphRecommendations = normalizeAdaptiveGraphRecommendations(graphRecommendations, assetLookup).recommendations;
   const recommendationResult = buildAdaptiveLearningRecommendations({
     features,
     learningAssets,
-    profile,
-    graphRecommendations,
+    profile: normalizedProfile,
+    graphRecommendations: normalizedGraphRecommendations,
     limit: 3,
   });
-  const contextualHelpHint = buildCatalogContextualHelpHint(profile, features, learningAssets, graphRecommendations);
-  const guidedTutorial = buildCatalogGuidedTutorial(profile, recommendationResult, learningAssets, features, graphRecommendations);
+  const contextualHelpHint = buildCatalogContextualHelpHint(normalizedProfile, features, learningAssets, normalizedGraphRecommendations);
+  const guidedTutorial = buildCatalogGuidedTutorial(normalizedProfile, recommendationResult, learningAssets, features, normalizedGraphRecommendations);
 
   return {
     hasLearnerProfile,
-    graphSynced: graphRecommendations.length > 0,
-    learnerProfile: profile,
-    graphRecommendations,
+    profileCompleteness,
+    graphSynced: normalizedGraphRecommendations.length > 0,
+    learnerProfile: normalizedProfile,
+    graphRecommendations: normalizedGraphRecommendations,
     guidedTutorial,
-    banner: buildBanner(hasLearnerProfile, graphRecommendations.length > 0, recommendationResult),
+    banner: buildBanner(profileCompleteness, normalizedGraphRecommendations.length > 0, recommendationResult),
     recommendationResult,
     contextualHelpHint,
   };
@@ -327,14 +329,14 @@ export async function loadAdaptiveLearningCatalogRuntime(
 ): Promise<AdaptiveLearningCatalogRuntime> {
   const safeUserId = userId ?? 0;
   const savedProfile = safeUserId > 0 ? await learnerProfileStore.loadByUserId(safeUserId) : null;
-  const profile = savedProfile ?? createDefaultLearnerProfile(`user-${safeUserId || 'guest'}`);
+  const profile = normalizeLearnerProfile(savedProfile, `user-${safeUserId || 'guest'}`);
   let graphRecommendations: AdaptiveGraphAssetRecommendation[] = [];
   let graphSynced = false;
 
-  if (savedProfile) {
+  if (savedProfile && getAdaptiveProfileCompleteness(profile, true) === 'complete') {
     try {
-      await adaptiveGraphRepository.syncAdaptiveLearningGraph(buildAdaptiveGraphSyncPayload(savedProfile));
-      const snapshot = await adaptiveGraphRepository.getLearnerSnapshot(savedProfile.learnerId);
+      await adaptiveGraphRepository.syncAdaptiveLearningGraph(buildAdaptiveGraphSyncPayload(profile));
+      const snapshot = await adaptiveGraphRepository.getLearnerSnapshot(profile.learnerId);
       graphRecommendations = snapshot?.recommendations ?? [];
       graphSynced = true;
     } catch (_error) {

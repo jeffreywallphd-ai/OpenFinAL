@@ -1,6 +1,6 @@
-import { registerAdaptiveFeature } from '@domain/adaptive-learning';
+import { defineAdaptiveFeatureRegistration } from '../registration';
 
-export const aiChatAssistantFeature = registerAdaptiveFeature(
+export const aiChatAssistantFeature = defineAdaptiveFeatureRegistration(
   {
     id: 'feature-ai-chat-assistant',
     key: 'ai-chat-assistant',
@@ -31,7 +31,5 @@ export const aiChatAssistantFeature = registerAdaptiveFeature(
       accessibilityAssetIds: ['help-keyboard-navigation-global'],
     },
   },
-  {
-    source: 'src/View/Chatbot.jsx',
-  },
+  'src/View/Chatbot.jsx',
 );

@@ -24,6 +24,46 @@ describe('adaptive learning catalog UI integration', () => {
     expect(viewModel.recommendationResult.featureGovernance.deemphasizedFeatureIds.length).toBeGreaterThanOrEqual(0);
   });
 
+
+  test('falls back to safe local guidance when a saved profile is incomplete or graph data references unknown assets', () => {
+    const runtime = buildAdaptiveLearningCatalogRuntime({
+      profile: {
+        learnerId: 'user-partial',
+        knowledgeLevel: 'unknown',
+        investmentGoals: [],
+        riskPreference: 'unknown',
+        interestedTags: [],
+        completedAssets: [],
+        progressMarkers: [],
+        unlockedAssetIds: [],
+        hiddenAssetIds: [],
+      },
+      hasLearnerProfile: true,
+      graphRecommendations: [
+        {
+          assetId: 'unknown-graph-asset',
+          kind: 'feature',
+          title: 'Unknown asset',
+          category: 'analysis',
+          knowledgeLevel: 'beginner',
+          relevanceScore: 10,
+          reasons: ['Graph match: should be discarded because the asset is not registered.'],
+          tutorialAssetIds: [],
+          helpAssetIds: [],
+          prerequisiteAssetIds: [],
+          completed: false,
+        },
+      ],
+    });
+    const viewModel = buildAdaptiveLearningCatalogViewModel(runtime);
+
+    expect(viewModel.profileCompleteness).toBe('partial');
+    expect(viewModel.graphSynced).toBe(false);
+    expect(viewModel.graphRecommendations).toHaveLength(0);
+    expect(viewModel.banner.title).toContain('Finish the learner profile');
+    expect(viewModel.cards).toHaveLength(3);
+  });
+
   test('surfaces related feature unlocks and graph reasons in the learning catalog cards', () => {
     const profile: LearnerProfile = {
       learnerId: 'user-9',

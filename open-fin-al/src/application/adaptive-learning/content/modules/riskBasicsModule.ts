@@ -1,6 +1,6 @@
-import { registerAdaptiveLearningContent } from '@domain/adaptive-learning';
+import { defineAdaptiveLearningContentRegistration } from '../../registration';
 
-export const riskBasicsModule = registerAdaptiveLearningContent(
+export const riskBasicsModule = defineAdaptiveLearningContentRegistration(
   {
     id: 'module-risk-basics',
     key: 'risk-basics',
@@ -46,7 +46,5 @@ export const riskBasicsModule = registerAdaptiveLearningContent(
       },
     ],
   },
-  {
-    source: 'src/View/LearningModule/LearningModuleDetails.jsx',
-  },
+  'src/View/LearningModule/LearningModuleDetails.jsx',
 );

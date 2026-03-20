@@ -1,6 +1,6 @@
-import { registerAdaptiveLearningContent } from '@domain/adaptive-learning';
+import { defineAdaptiveLearningContentRegistration } from '../../registration';
 
-export const learningModulesFiltersHint = registerAdaptiveLearningContent(
+export const learningModulesFiltersHint = defineAdaptiveLearningContentRegistration(
   {
     id: 'help-learning-modules-filters',
     key: 'learning-modules-filters',
@@ -55,7 +55,5 @@ export const learningModulesFiltersHint = registerAdaptiveLearningContent(
       },
     ],
   },
-  {
-    source: 'src/View/Learn.jsx',
-  },
+  'src/View/Learn.jsx',
 );

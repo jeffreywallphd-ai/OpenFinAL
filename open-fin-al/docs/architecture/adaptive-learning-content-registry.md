@@ -75,7 +75,7 @@ These align with help/accessibility asset ids already referenced by adaptive fea
 
 ## Bootstrap pattern
 
-`src/application/adaptive-learning/bootstrapAdaptiveLearningContent.ts` imports the representative content registration modules so one bootstrap call hydrates the content registry.
+`src/application/adaptive-learning/bootstrapAdaptiveLearningContent.ts` gathers the representative content registration descriptors and hydrates the content registry through one explicit bootstrap call.
 
 The renderer now boots both registries early:
 
@@ -113,7 +113,7 @@ When adding a new module, tutorial, or hint:
 1. Create a registration module under `src/application/adaptive-learning/content/`.
 2. Define a complete `LearningModuleMetadata`, `TutorialMetadata`, or `HelpHintMetadata` object.
 3. Include `supportedModalities`, `relatedFeatureIds`, and any `recommendedNextSteps` or `unlockValue` fields that apply.
-4. Call `registerAdaptiveLearningContent(metadata, { source: '<source file>' })`.
-5. Import the module from `bootstrapAdaptiveLearningContent.ts`.
+4. Export a descriptor with `defineAdaptiveLearningContentRegistration(metadata, '<source file>')`.
+5. Add the descriptor to `bootstrapAdaptiveLearningContent.ts`.
 6. Add or update targeted registry tests.
 7. Use `exportAdaptiveLearningContentGraphNodes()` for graph sync rather than scraping UI files.

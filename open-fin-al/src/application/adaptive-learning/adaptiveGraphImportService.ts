@@ -6,20 +6,15 @@ import {
   AdaptiveGraphSyncPayload,
   AdaptiveGraphSyncResult,
   LearnerProfile,
-  listAdaptiveFeatures,
-  listAdaptiveLearningContent,
 } from '@domain/adaptive-learning';
-import { bootstrapAdaptiveFeatures } from './bootstrapAdaptiveFeatures';
-import { bootstrapAdaptiveLearningContent } from './bootstrapAdaptiveLearningContent';
+import { getAdaptiveCatalogAssets } from './adaptiveCatalog';
 import { buildAdaptiveGraphSyncPayload } from './adaptiveGraphSnapshot';
 
-function mapRegistryEntriesToGraphNodes() : AdaptiveGraphCatalogAssetNode[] {
-  const entries = [
-    ...listAdaptiveFeatures(),
-    ...listAdaptiveLearningContent(),
-  ];
+function mapRegistryEntriesToGraphNodes(): AdaptiveGraphCatalogAssetNode[] {
+  const { features, learningAssets } = getAdaptiveCatalogAssets();
+  const entries = [...features, ...learningAssets];
 
-  return entries.map(({ metadata, registeredAt, source }) => ({
+  return entries.map((metadata) => ({
     id: metadata.id,
     key: metadata.key,
     kind: metadata.kind,
@@ -34,8 +29,6 @@ function mapRegistryEntriesToGraphNodes() : AdaptiveGraphCatalogAssetNode[] {
     riskAlignment: [...metadata.riskAlignment],
     prerequisites: metadata.prerequisites.map((prerequisite) => ({ ...prerequisite })),
     governance: { ...metadata.governance },
-    source,
-    registeredAt,
     relationships: {
       relatedAssetIds: [...metadata.relationships.relatedAssetIds],
       relatedFeatureIds: [...metadata.relationships.relatedFeatureIds],
@@ -59,9 +52,6 @@ export function buildAdaptiveGraphCatalogSyncPayload(
   syncedAt: string = new Date().toISOString(),
   mode: 'incremental' | 'full' = 'incremental',
 ): AdaptiveGraphCatalogSyncPayload {
-  bootstrapAdaptiveFeatures();
-  bootstrapAdaptiveLearningContent();
-
   return {
     assetNodes: mapRegistryEntriesToGraphNodes(),
     syncedAt,

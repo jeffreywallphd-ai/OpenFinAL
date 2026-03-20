@@ -1,6 +1,6 @@
-import { registerAdaptiveLearningContent } from '@domain/adaptive-learning';
+import { defineAdaptiveLearningContentRegistration } from '../../registration';
 
-export const tradeWorkbenchFirstOrderTutorial = registerAdaptiveLearningContent(
+export const tradeWorkbenchFirstOrderTutorial = defineAdaptiveLearningContentRegistration(
   {
     id: 'tutorial-trade-workbench-first-order',
     key: 'trade-workbench-first-order',
@@ -46,7 +46,5 @@ export const tradeWorkbenchFirstOrderTutorial = registerAdaptiveLearningContent(
       },
     ],
   },
-  {
-    source: 'src/View/Stock.jsx',
-  },
+  'src/View/Stock.jsx',
 );
