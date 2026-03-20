@@ -19,6 +19,8 @@ describe('adaptive learning catalog UI integration', () => {
     expect(viewModel.contextualHelpHint?.assetId).toBe('help-learning-modules-filters');
     expect(viewModel.guidedTutorial?.tutorial.id).toBe('tutorial-learning-modules-search');
     expect(viewModel.cards[0].rationale.length).toBeGreaterThan(0);
+    expect(viewModel.cards[0].relatedFeatures.length).toBeGreaterThan(0);
+    expect(viewModel.cards.some((card) => card.tutorials.length + card.helpHints.length > 0)).toBe(true);
     expect(viewModel.recommendationResult.featureGovernance.deemphasizedFeatureIds.length).toBeGreaterThanOrEqual(0);
   });
 
@@ -78,6 +80,14 @@ describe('adaptive learning catalog UI integration', () => {
       ]),
     );
     expect(viewModel.cards[0].graphReasons[0]).toContain('Graph match');
+    expect(viewModel.cards[0].unlockOpportunities.length).toBeGreaterThan(0);
+    expect(viewModel.cards[0].relatedFeatures).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          assetId: 'feature-trade-workbench',
+        }),
+      ]),
+    );
     expect(viewModel.banner.title).toBe('Graph-backed learning recommendations');
     expect(viewModel.contextualHelpHint?.assetId).toBe('help-learning-modules-filters');
     expect(viewModel.guidedTutorial?.tutorial.id).toBe('tutorial-learning-modules-search');

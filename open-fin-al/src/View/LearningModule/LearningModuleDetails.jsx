@@ -14,6 +14,7 @@ import {
 export function LearningModuleDetails(props) {
     const location = useLocation();
     const navigate = useNavigate();
+    const adaptiveModuleCard = location.state?.adaptiveModuleCard;
 
     const [state, setState] = useState({
         pages: null,
@@ -69,6 +70,59 @@ export function LearningModuleDetails(props) {
                 <h3>{location.state.title}</h3>
                 <p>Description: {location.state.description}</p>
                 <p>Estimated Time: {location.state.timeEstimate} minutes</p>
+                {adaptiveModuleCard?.metadataTitle ? (
+                    <p>Adaptive metadata: {adaptiveModuleCard.metadataTitle}</p>
+                ) : (
+                    <p>Adaptive metadata: pending first-class metadata authoring for this module.</p>
+                )}
+                {adaptiveModuleCard?.contentSource ? (
+                    <p>Delivery pipeline: <strong>{adaptiveModuleCard.contentSource.label}</strong> — {adaptiveModuleCard.contentSource.summary}</p>
+                ) : null}
+                {adaptiveModuleCard?.prerequisites?.length ? (
+                    <div className="adaptive-learning-recommendation-card__section">
+                        <h4>Prerequisites</h4>
+                        <ul>
+                            {adaptiveModuleCard.prerequisites.map((prerequisite) => (
+                                <li key={prerequisite.label}>
+                                    <strong>{prerequisite.satisfied ? "Ready" : "Next up"}</strong>: {prerequisite.label}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+                {adaptiveModuleCard?.relatedFeatures?.length ? (
+                    <div className="adaptive-learning-recommendation-card__section">
+                        <h4>Related features/tools</h4>
+                        <ul>
+                            {adaptiveModuleCard.relatedFeatures.map((feature) => (
+                                <li key={feature.assetId}>
+                                    <strong>{feature.title}</strong>{feature.availabilityState ? ` (${feature.availabilityState})` : ""}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+                {adaptiveModuleCard?.unlockOpportunities?.length ? (
+                    <div className="adaptive-learning-recommendation-card__section">
+                        <h4>Unlock opportunities</h4>
+                        <ul>
+                            {adaptiveModuleCard.unlockOpportunities.map((opportunity) => (
+                                <li key={`${opportunity.assetId || opportunity.title}-${opportunity.reason}`}>
+                                    <strong>{opportunity.title}</strong>: {opportunity.reason}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+                {adaptiveModuleCard?.tutorials?.length || adaptiveModuleCard?.helpHints?.length ? (
+                    <div className="adaptive-learning-recommendation-card__section">
+                        <h4>Tutorials and hints</h4>
+                        <ul>
+                            {adaptiveModuleCard?.tutorials?.map((tutorial) => <li key={tutorial.assetId}>Tutorial: {tutorial.title}</li>)}
+                            {adaptiveModuleCard?.helpHints?.map((hint) => <li key={hint.assetId}>Hint: {hint.title}</li>)}
+                        </ul>
+                    </div>
+                ) : null}
             </div>
                 {
                     state.isLoading ? 

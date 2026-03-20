@@ -125,6 +125,12 @@ export interface AdaptiveNextStep {
   unlockValue?: number;
 }
 
+export interface AdaptiveLearningModulePresentationMetadata {
+  catalogRecordIds?: number[];
+  legacyTitles?: string[];
+  legacyCategories?: string[];
+}
+
 interface AdaptiveAssetMetadataBase {
   id: string;
   key: string;
@@ -158,6 +164,7 @@ export interface LearningModuleMetadata extends AdaptiveLearningContentMetadataB
   kind: 'learning-module';
   category: LearningCategory;
   estimatedDurationMinutes?: number;
+  presentation?: AdaptiveLearningModulePresentationMetadata;
 }
 
 export interface TutorialMetadata extends AdaptiveLearningContentMetadataBase {

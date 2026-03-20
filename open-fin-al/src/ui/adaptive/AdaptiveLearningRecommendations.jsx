@@ -62,6 +62,32 @@ export function AdaptiveLearningRecommendations({ viewModel, loading = false }) 
               </ul>
             </div>
 
+            {card.prerequisites.length ? (
+              <div className="adaptive-learning-recommendation-card__section">
+                <h4>Prerequisites</h4>
+                <ul>
+                  {card.prerequisites.map((prerequisite) => (
+                    <li key={prerequisite.label}>
+                      <strong>{prerequisite.satisfied ? 'Ready' : 'Next up'}</strong>: {prerequisite.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {card.relatedFeatures.length ? (
+              <div className="adaptive-learning-recommendation-card__section">
+                <h4>Related features and tools</h4>
+                <ul>
+                  {card.relatedFeatures.map((feature) => (
+                    <li key={feature.assetId}>
+                      <strong>{feature.title}</strong> ({feature.availabilityState})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             {card.featureUnlocks.length ? (
               <div className="adaptive-learning-recommendation-card__section">
                 <h4>Related feature unlocks</h4>
@@ -71,6 +97,29 @@ export function AdaptiveLearningRecommendations({ viewModel, loading = false }) 
                       <strong>{unlock.title}</strong> ({unlock.availabilityState}): {unlock.whyItMatters}
                     </li>
                   ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {card.unlockOpportunities.length ? (
+              <div className="adaptive-learning-recommendation-card__section">
+                <h4>Unlock opportunities</h4>
+                <ul>
+                  {card.unlockOpportunities.map((opportunity) => (
+                    <li key={`${opportunity.assetId ?? opportunity.title}-${opportunity.reason}`}>
+                      <strong>{opportunity.title}</strong>: {opportunity.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {card.tutorials.length || card.helpHints.length ? (
+              <div className="adaptive-learning-recommendation-card__section">
+                <h4>Tutorials and hints</h4>
+                <ul>
+                  {card.tutorials.map((tutorial) => <li key={tutorial.assetId}>Tutorial: {tutorial.title}</li>)}
+                  {card.helpHints.map((hint) => <li key={hint.assetId}>Hint: {hint.title}</li>)}
                 </ul>
               </div>
             ) : null}

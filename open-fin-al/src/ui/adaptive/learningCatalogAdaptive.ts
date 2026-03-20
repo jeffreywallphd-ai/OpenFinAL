@@ -43,6 +43,29 @@ export interface AdaptiveLearningRecommendationCard {
   score: number;
   summary: string;
   rationale: string[];
+  prerequisites: Array<{
+    label: string;
+    satisfied: boolean;
+  }>;
+  relatedFeatures: Array<{
+    assetId: string;
+    title: string;
+    availabilityState: string;
+  }>;
+  tutorials: Array<{
+    assetId: string;
+    title: string;
+  }>;
+  helpHints: Array<{
+    assetId: string;
+    title: string;
+  }>;
+  unlockOpportunities: Array<{
+    assetId?: string;
+    title: string;
+    reason: string;
+    unlockValue?: number;
+  }>;
   featureUnlocks: Array<{
     assetId: string;
     title: string;
@@ -167,7 +190,26 @@ function buildBanner(
   };
 }
 
+function describePrerequisite(prerequisite: AdaptiveLearningRecommendation['asset']['prerequisites'][number]): string {
+  return prerequisite.description;
+}
+
 export function buildAdaptiveLearningCatalogViewModel(runtime: AdaptiveLearningCatalogRuntime): AdaptiveLearningCatalogViewModel {
+  bootstrapAdaptiveFeatures();
+  bootstrapAdaptiveLearningContent();
+
+  const featuresById = listAdaptiveFeatures().reduce<Record<string, ReturnType<typeof listAdaptiveFeatures>[number]['metadata']>>((accumulator, entry) => {
+    accumulator[entry.metadata.id] = entry.metadata;
+    return accumulator;
+  }, {});
+  const learningAssetsById = listAdaptiveLearningContent().reduce<Record<string, ReturnType<typeof listAdaptiveLearningContent>[number]['metadata']>>(
+    (accumulator, entry) => {
+      accumulator[entry.metadata.id] = entry.metadata;
+      return accumulator;
+    },
+    {},
+  );
+
   return {
     ...runtime,
     guidedTutorial: runtime.guidedTutorial,
@@ -189,6 +231,46 @@ export function buildAdaptiveLearningCatalogViewModel(runtime: AdaptiveLearningC
       score: recommendation.score,
       summary: recommendation.explanation.summary,
       rationale: recommendation.explanation.reasons.slice(0, 3).map((reason) => reason.message),
+      prerequisites: recommendation.governanceDecision.explanation.debug.prerequisiteStatuses.map((status) => ({
+        label: describePrerequisite(status.prerequisite),
+        satisfied: status.satisfied,
+      })),
+      relatedFeatures: recommendation.asset.relationships.relatedFeatureIds
+        .map((featureId) => featuresById[featureId])
+        .filter(Boolean)
+        .map((feature) => ({
+          assetId: feature.id,
+          title: feature.title,
+          availabilityState: runtime.recommendationResult.decisionsByAssetId[feature.id]?.availabilityState ?? 'visible',
+        })),
+      tutorials: recommendation.asset.relationships.tutorialAssetIds
+        .map((assetId) => learningAssetsById[assetId])
+        .filter(Boolean)
+        .map((asset) => ({
+          assetId: asset.id,
+          title: asset.title,
+        })),
+      helpHints: recommendation.asset.relationships.helpAssetIds
+        .map((assetId) => learningAssetsById[assetId])
+        .filter(Boolean)
+        .map((asset) => ({
+          assetId: asset.id,
+          title: asset.title,
+        })),
+      unlockOpportunities: [
+        ...recommendation.relatedFeatureUnlocks.map((unlock) => ({
+          assetId: unlock.assetId,
+          title: unlock.title,
+          reason: unlock.whyItMatters,
+          unlockValue: unlock.unlockValue,
+        })),
+        ...(recommendation.asset.recommendedNextSteps ?? []).map((nextStep) => ({
+          assetId: nextStep.assetId,
+          title: nextStep.title,
+          reason: nextStep.reason,
+          unlockValue: nextStep.unlockValue,
+        })),
+      ],
       featureUnlocks: recommendation.relatedFeatureUnlocks.map((unlock) => ({
         assetId: unlock.assetId,
         title: unlock.title,

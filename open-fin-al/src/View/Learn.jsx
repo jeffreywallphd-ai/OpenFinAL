@@ -11,6 +11,7 @@ import { useHeader } from './App/LoadedLayout';
 import { DataContext } from './App';
 import { AdaptiveGuidedTutorial, AdaptiveHelpHintPanel, AdaptiveLearningRecommendations, useAdaptiveLearningCatalogRecommendations } from '@ui/adaptive';
 import { GuidedTutorialInteractor } from '../Interactor/GuidedTutorialInteractor';
+import { buildAdaptiveLearningModuleCards } from '@application/adaptive-learning/learningModuleArea';
 
 export function Learn() {
   const { setHeader } = useHeader();
@@ -26,6 +27,18 @@ export function Learn() {
   const { adaptiveLearningCatalog, adaptiveLearningLoading } = useAdaptiveLearningCatalogRecommendations(user?.id);
   const guidedTutorialInteractor = useMemo(() => new GuidedTutorialInteractor(), []);
   const [tutorialSaving, setTutorialSaving] = useState(false);
+  const adaptiveModuleCards = useMemo(
+    () => (
+      state.modules
+        ? buildAdaptiveLearningModuleCards(state.modules, {
+            profile: adaptiveLearningCatalog?.learnerProfile,
+            graphRecommendations: adaptiveLearningCatalog?.graphRecommendations ?? [],
+            recommendationResult: adaptiveLearningCatalog?.recommendationResult,
+          })
+        : []
+    ),
+    [adaptiveLearningCatalog, state.modules],
+  );
 
   useEffect(() => {
     setHeader({
@@ -151,21 +164,86 @@ export function Learn() {
 
       <section className="learning-modules-list" data-guided-tutorial-anchor="learning-modules-results">
         {state.modules ? (
-          state.modules.map((module, index) => (
-            <article key={index} className="learning-modules-list__card">
-              <h3>{module.title}</h3>
+          adaptiveModuleCards.map((module) => (
+            <article key={module.moduleId} className="learning-modules-list__card">
+              <div className="adaptive-learning-recommendation-card__header">
+                <div>
+                  <p className="adaptive-feature-section__eyebrow">
+                    {module.recommended ? 'Recommended module' : 'Learning module'}
+                  </p>
+                  <h3>{module.title}</h3>
+                </div>
+                {module.recommendationScore ? <span className="adaptive-feature-section__pill">Score {module.recommendationScore}</span> : null}
+              </div>
               <p>Description: {module.description}</p>
               <p>Estimated Time: {module.timeEstimate} minutes</p>
+              <p>
+                Delivery: <strong>{module.contentSource.label}</strong> — {module.contentSource.summary}
+              </p>
+              {module.metadataTitle ? (
+                <p>
+                  Adaptive metadata: <strong>{module.metadataTitle}</strong>
+                </p>
+              ) : (
+                <p>Adaptive metadata: pending first-class authoring metadata for this legacy module.</p>
+              )}
+              {module.prerequisites.length ? (
+                <div className="adaptive-learning-recommendation-card__section">
+                  <h4>Prerequisites</h4>
+                  <ul>
+                    {module.prerequisites.map((prerequisite) => (
+                      <li key={prerequisite.label}>
+                        <strong>{prerequisite.satisfied ? 'Ready' : 'Next up'}</strong>: {prerequisite.label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {module.relatedFeatures.length ? (
+                <div className="adaptive-learning-recommendation-card__section">
+                  <h4>Related features/tools</h4>
+                  <ul>
+                    {module.relatedFeatures.map((feature) => (
+                      <li key={feature.assetId}>
+                        <strong>{feature.title}</strong>
+                        {feature.availabilityState ? ` (${feature.availabilityState})` : ''}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {module.unlockOpportunities.length ? (
+                <div className="adaptive-learning-recommendation-card__section">
+                  <h4>Unlock opportunities</h4>
+                  <ul>
+                    {module.unlockOpportunities.map((opportunity) => (
+                      <li key={`${opportunity.assetId ?? opportunity.title}-${opportunity.reason}`}>
+                        <strong>{opportunity.title}</strong>: {opportunity.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {module.tutorials.length || module.helpHints.length ? (
+                <div className="adaptive-learning-recommendation-card__section">
+                  <h4>Tutorials and hints</h4>
+                  <ul>
+                    {module.tutorials.map((tutorial) => <li key={tutorial.assetId}>Tutorial: {tutorial.title}</li>)}
+                    {module.helpHints.map((hint) => <li key={hint.assetId}>Hint: {hint.title}</li>)}
+                  </ul>
+                </div>
+              ) : null}
               <NavLink
                 to="/learningModule"
                 state={{
-                  moduleId: module.id,
+                  moduleId: module.moduleId,
                   title: module.title,
                   description: module.description,
                   timeEstimate: module.timeEstimate,
-                  dateCreated: module.dateCreated,
+                  dateCreated: state.modules.find((entry) => entry.id === module.moduleId)?.dateCreated,
                   fileName: module.fileName,
                   pages: null,
+                  adaptiveModuleCard: module,
                 }}
               >
                 View Module
