@@ -27,6 +27,7 @@ export const tradeWorkbenchFeature = registerAdaptiveFeature(
       visibleDuringOnboarding: false,
       lockWhenPrerequisitesUnmet: true,
       hideWhenLearnerDismisses: true,
+      criticality: 'standard',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,

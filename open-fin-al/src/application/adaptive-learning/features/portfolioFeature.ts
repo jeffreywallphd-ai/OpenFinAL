@@ -20,6 +20,7 @@ export const portfolioFeature = registerAdaptiveFeature(
       eligibleForHighlighting: true,
       visibleDuringOnboarding: true,
       hideWhenLearnerDismisses: false,
+      criticality: 'core',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,

@@ -19,6 +19,7 @@ export const investmentNewsFeature = registerAdaptiveFeature(
       eligibleForHighlighting: true,
       visibleDuringOnboarding: true,
       hideWhenLearnerDismisses: true,
+      criticality: 'standard',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,

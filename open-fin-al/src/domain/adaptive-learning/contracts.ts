@@ -59,6 +59,13 @@ export type FeatureAvailabilityState = (typeof FEATURE_AVAILABILITY_STATES)[numb
 export const DEFAULT_AVAILABILITY_VALUES = ['enabled', 'disabled'] as const;
 export type DefaultAvailability = (typeof DEFAULT_AVAILABILITY_VALUES)[number];
 
+export const ADAPTIVE_CRITICALITY_LEVELS = ['core', 'standard', 'optional'] as const;
+export type AdaptiveCriticality = (typeof ADAPTIVE_CRITICALITY_LEVELS)[number];
+
+export type KnowledgeFit = 'below-target' | 'aligned' | 'above-target';
+export type AlignmentStrength = 'none' | 'partial' | 'strong';
+export type RiskAlignmentStatus = 'none' | 'aligned' | 'unknown';
+
 export interface AdaptiveAssetReference {
   assetId: string;
   kind: AdaptiveAssetKind;
@@ -100,6 +107,7 @@ export interface AdaptiveGovernance {
   visibleDuringOnboarding?: boolean;
   lockWhenPrerequisitesUnmet?: boolean;
   hideWhenLearnerDismisses?: boolean;
+  criticality?: AdaptiveCriticality;
 }
 
 export interface AdaptiveAssetRelationships {
@@ -268,15 +276,74 @@ export interface AdaptivePolicy {
   action: AdaptivePolicyAction;
 }
 
+export interface AdaptiveDecisionReason {
+  code:
+    | 'default-availability'
+    | 'knowledge-fit'
+    | 'knowledge-gap'
+    | 'goal-alignment'
+    | 'risk-alignment'
+    | 'prerequisite-unmet'
+    | 'prerequisite-satisfied'
+    | 'learner-hidden'
+    | 'learner-unlocked'
+    | 'policy-match'
+    | 'policy-suppressed'
+    | 'relationship-support'
+    | 'criticality-governance';
+  message: string;
+  source: 'metadata' | 'policy' | 'relationship' | 'learner-state';
+  details?: Record<string, boolean | number | string | string[]>;
+}
+
+export interface AdaptiveDecisionDebugInfo {
+  knowledgeFit: KnowledgeFit;
+  goalAlignment: AlignmentStrength;
+  riskAlignment: RiskAlignmentStatus;
+  criticality: AdaptiveCriticality;
+  prerequisiteStatuses: Array<{
+    prerequisite: Prerequisite;
+    satisfied: boolean;
+  }>;
+  matchedPolicyIds: string[];
+  relatedAssetIdsConsidered: string[];
+  supportingAssetIds: string[];
+}
+
+export interface AdaptiveDecisionExplanation {
+  summary: string;
+  reasons: AdaptiveDecisionReason[];
+  debug: AdaptiveDecisionDebugInfo;
+}
+
 export interface VisibilityDecision {
   assetId: string;
   availabilityState: FeatureAvailabilityState;
   recommended: boolean;
   highlighted: boolean;
   highlightForLearningLater: boolean;
+  suggestedForLaterUnlocking: boolean;
   reasons: string[];
   unmetPrerequisites: Prerequisite[];
   applicablePolicyIds: string[];
+  supportingAssetIds: string[];
+  explanation: AdaptiveDecisionExplanation;
+}
+
+export interface AdaptivePolicyEvaluationSummary {
+  visibleAssetIds: string[];
+  hiddenAssetIds: string[];
+  lockedAssetIds: string[];
+  deemphasizedAssetIds: string[];
+  recommendedAssetIds: string[];
+  highlightedAssetIds: string[];
+  suggestedForLaterUnlockingAssetIds: string[];
+}
+
+export interface AdaptivePolicyEvaluationResult {
+  decisions: VisibilityDecision[];
+  decisionsByAssetId: Record<string, VisibilityDecision>;
+  summary: AdaptivePolicyEvaluationSummary;
 }
 
 export interface AdaptiveFeatureGraphNode {

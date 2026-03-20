@@ -18,6 +18,7 @@ export const riskBasicsModule = registerAdaptiveLearningContent(
       eligibleForRecommendation: true,
       eligibleForHighlighting: true,
       visibleDuringOnboarding: true,
+      criticality: 'core',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,
