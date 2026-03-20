@@ -31,6 +31,11 @@ export const investingBasicsModule = registerAdaptiveLearningContent(
     },
     supportedModalities: ['reading', 'interactive'],
     estimatedDurationMinutes: 15,
+    presentation: {
+      catalogRecordIds: [1, 2, 9],
+      legacyTitles: ['Introduction to Stocks', 'Introduction to Bonds', 'Introduction to Investing'],
+      legacyCategories: ['Stock', 'Bond', 'ETF'],
+    },
     unlockValue: 0.25,
     recommendedNextSteps: [
       {

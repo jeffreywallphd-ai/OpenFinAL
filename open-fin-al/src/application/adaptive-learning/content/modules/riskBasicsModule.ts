@@ -31,6 +31,11 @@ export const riskBasicsModule = registerAdaptiveLearningContent(
     },
     supportedModalities: ['reading', 'reference'],
     estimatedDurationMinutes: 12,
+    presentation: {
+      catalogRecordIds: [4],
+      legacyTitles: ['Risk Free Investments'],
+      legacyCategories: ['Risk Free Investments'],
+    },
     unlockValue: 0.35,
     recommendedNextSteps: [
       {
