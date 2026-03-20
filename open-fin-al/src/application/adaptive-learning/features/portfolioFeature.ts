@@ -1,6 +1,6 @@
-import { registerAdaptiveFeature } from '@domain/adaptive-learning';
+import { defineAdaptiveFeatureRegistration } from '../registration';
 
-export const portfolioFeature = registerAdaptiveFeature(
+export const portfolioFeature = defineAdaptiveFeatureRegistration(
   {
     id: 'feature-portfolio-dashboard',
     key: 'portfolio-dashboard',
@@ -32,7 +32,5 @@ export const portfolioFeature = registerAdaptiveFeature(
       accessibilityAssetIds: ['help-keyboard-navigation-global'],
     },
   },
-  {
-    source: 'src/View/Portfolio.jsx',
-  },
+  'src/View/Portfolio.jsx',
 );

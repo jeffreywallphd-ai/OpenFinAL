@@ -1,6 +1,6 @@
-import { registerAdaptiveLearningContent } from '@domain/adaptive-learning';
+import { defineAdaptiveLearningContentRegistration } from '../../registration';
 
-export const keyboardNavigationGlobalHint = registerAdaptiveLearningContent(
+export const keyboardNavigationGlobalHint = defineAdaptiveLearningContentRegistration(
   {
     id: 'help-keyboard-navigation-global',
     key: 'keyboard-navigation-global',
@@ -47,7 +47,5 @@ export const keyboardNavigationGlobalHint = registerAdaptiveLearningContent(
       maxDisplayCount: 4,
     },
   },
-  {
-    source: 'src/renderer.js',
-  },
+  'src/renderer.js',
 );

@@ -48,7 +48,7 @@ Representative user-facing features are defined in colocated registration module
 - `src/application/adaptive-learning/features/learningModulesFeature.ts`
 - `src/application/adaptive-learning/features/aiChatAssistantFeature.ts`
 
-Each module calls `registerAdaptiveFeature(...)` at import time. The manifest file `src/application/adaptive-learning/bootstrapAdaptiveFeatures.ts` imports those modules so one bootstrap import can hydrate the registry.
+Each module now exports a registration descriptor created with `defineAdaptiveFeatureRegistration(...)`. The manifest file `src/application/adaptive-learning/bootstrapAdaptiveFeatures.ts` gathers those descriptors and calls `bootstrapAdaptiveFeatures()` so one bootstrap step hydrates the registry without relying on import-time side effects.
 
 The application entry point imports the bootstrap manifest in `src/renderer.js` so the registry is populated early and can be queried centrally.
 
@@ -70,9 +70,9 @@ When a new user-facing feature/tool/component is introduced:
 
 1. Create a new feature registration module under `src/application/adaptive-learning/features/`.
 2. Define a complete `AdaptiveFeatureMetadata` object.
-3. Call `registerAdaptiveFeature(metadata, { source: '<source file>' })`.
+3. Export a descriptor with `defineAdaptiveFeatureRegistration(metadata, '<source file>')`.
 4. Add tutorial/help/accessibility relationship ids even if the referenced assets are delivered later.
-5. Import the new registration module from `src/application/adaptive-learning/bootstrapAdaptiveFeatures.ts`.
+5. Add the new descriptor to `src/application/adaptive-learning/bootstrapAdaptiveFeatures.ts`.
 6. Add or update tests that cover lookup and any selector behavior specific to the feature.
 7. If the feature should later sync to the adaptive graph, consume `exportAdaptiveFeatureGraphNodes()` rather than scraping component files.
 

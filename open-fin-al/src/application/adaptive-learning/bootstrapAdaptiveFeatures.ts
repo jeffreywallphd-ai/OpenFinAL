@@ -1,9 +1,18 @@
-import './features/portfolioFeature';
-import './features/tradeWorkbenchFeature';
-import './features/investmentNewsFeature';
-import './features/learningModulesFeature';
-import './features/aiChatAssistantFeature';
+import { registerAdaptiveFeatureDefinitions } from './registration';
+import { aiChatAssistantFeature } from './features/aiChatAssistantFeature';
+import { investmentNewsFeature } from './features/investmentNewsFeature';
+import { learningModulesFeature } from './features/learningModulesFeature';
+import { portfolioFeature } from './features/portfolioFeature';
+import { tradeWorkbenchFeature } from './features/tradeWorkbenchFeature';
+
+export const adaptiveFeatureRegistrations = [
+  portfolioFeature,
+  tradeWorkbenchFeature,
+  investmentNewsFeature,
+  learningModulesFeature,
+  aiChatAssistantFeature,
+] as const;
 
 export function bootstrapAdaptiveFeatures(): void {
-  // Feature modules self-register via side effects so future app entry points can import one manifest.
+  registerAdaptiveFeatureDefinitions([...adaptiveFeatureRegistrations]);
 }

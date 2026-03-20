@@ -1,6 +1,6 @@
-import { registerAdaptiveFeature } from '@domain/adaptive-learning';
+import { defineAdaptiveFeatureRegistration } from '../registration';
 
-export const learningModulesFeature = registerAdaptiveFeature(
+export const learningModulesFeature = defineAdaptiveFeatureRegistration(
   {
     id: 'feature-learning-modules-catalog',
     key: 'learning-modules-catalog',
@@ -31,7 +31,5 @@ export const learningModulesFeature = registerAdaptiveFeature(
       accessibilityAssetIds: ['help-keyboard-navigation-global'],
     },
   },
-  {
-    source: 'src/View/Learn.jsx',
-  },
+  'src/View/Learn.jsx',
 );

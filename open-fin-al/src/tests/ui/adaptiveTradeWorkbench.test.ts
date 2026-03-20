@@ -20,6 +20,45 @@ describe('trade workbench adaptive UI mapping', () => {
     expect(slice.banner.message).toContain('learner profile');
   });
 
+
+  test('uses conservative fallback states when a saved learner profile is incomplete', () => {
+    const slice = buildTradeWorkbenchAdaptiveSlice({
+      profile: {
+        learnerId: 'learner-partial',
+        knowledgeLevel: 'unknown',
+        investmentGoals: [],
+        riskPreference: 'unknown',
+        interestedTags: [],
+        completedAssets: [],
+        progressMarkers: [],
+        unlockedAssetIds: [],
+        hiddenAssetIds: [],
+      },
+      hasLearnerProfile: true,
+      graphRecommendations: [
+        {
+          assetId: 'unknown-graph-asset',
+          kind: 'feature',
+          title: 'Unknown asset',
+          category: 'analysis',
+          knowledgeLevel: 'beginner',
+          relevanceScore: 8,
+          reasons: ['Graph match: should not override local fallback behavior.'],
+          tutorialAssetIds: [],
+          helpAssetIds: [],
+          prerequisiteAssetIds: [],
+          completed: false,
+        },
+      ],
+    });
+
+    expect(slice.profileCompleteness).toBe('partial');
+    expect(slice.graphRecommendations).toHaveLength(0);
+    expect(slice.tools.placeTrade.locked).toBe(false);
+    expect(slice.learningAssets[0].assetId).toBe('module-risk-basics');
+    expect(slice.banner.title).toContain('Complete the learner profile');
+  });
+
   test('maps learner profile policy decisions into locked, deemphasized, and learn-first trade UI states', () => {
     const profile: LearnerProfile = {
       learnerId: 'learner-beginner',

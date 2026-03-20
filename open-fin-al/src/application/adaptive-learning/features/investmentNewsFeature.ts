@@ -1,6 +1,6 @@
-import { registerAdaptiveFeature } from '@domain/adaptive-learning';
+import { defineAdaptiveFeatureRegistration } from '../registration';
 
-export const investmentNewsFeature = registerAdaptiveFeature(
+export const investmentNewsFeature = defineAdaptiveFeatureRegistration(
   {
     id: 'feature-investment-news',
     key: 'investment-news',
@@ -31,7 +31,5 @@ export const investmentNewsFeature = registerAdaptiveFeature(
       accessibilityAssetIds: ['help-keyboard-navigation-global'],
     },
   },
-  {
-    source: 'src/View/News.jsx',
-  },
+  'src/View/News.jsx',
 );

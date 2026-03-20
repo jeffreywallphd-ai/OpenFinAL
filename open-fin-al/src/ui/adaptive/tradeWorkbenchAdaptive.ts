@@ -1,5 +1,11 @@
 import { buildAdaptiveGraphSyncPayload } from '@application/adaptive-learning/adaptiveGraphSnapshot';
-import { createDefaultLearnerProfile } from '@application/adaptive-learning/learnerProfile';
+import {
+  AdaptiveProfileCompleteness,
+  getAdaptiveCatalogAssets,
+  getAdaptiveProfileCompleteness,
+  normalizeAdaptiveGraphRecommendations,
+  normalizeLearnerProfile,
+} from '@application/adaptive-learning/adaptiveCatalog';
 import { IAdaptiveGraphRepository } from '@application/services/IAdaptiveGraphRepository';
 import { ILearnerProfileStore } from '@application/services/ILearnerProfileStore';
 import { ElectronLearnerProfileStore } from '@infrastructure/electron/ElectronLearnerProfileStore';
@@ -13,11 +19,7 @@ import {
   evaluateAdaptivePolicyEngine,
   getAdaptiveFeatureById,
   getAdaptiveLearningContentById,
-  listAdaptiveFeatures,
-  listAdaptiveLearningContent,
 } from '@domain/adaptive-learning';
-import { bootstrapAdaptiveFeatures } from '@application/adaptive-learning/bootstrapAdaptiveFeatures';
-import { bootstrapAdaptiveLearningContent } from '@application/adaptive-learning/bootstrapAdaptiveLearningContent';
 
 const TRADE_WORKBENCH_FEATURE_ID = 'feature-trade-workbench';
 const TRADE_TUTORIAL_ID = 'tutorial-trade-workbench-first-order';
@@ -49,6 +51,7 @@ export interface AdaptiveUiBanner {
 
 export interface AdaptiveTradeWorkbenchSlice {
   hasLearnerProfile: boolean;
+  profileCompleteness: AdaptiveProfileCompleteness;
   learnerProfile: LearnerProfile;
   graphRecommendations: AdaptiveGraphAssetRecommendation[];
   banner: AdaptiveUiBanner;
@@ -73,16 +76,7 @@ interface BuildTradeWorkbenchAdaptiveSliceOptions {
 }
 
 function getTradeWorkbenchAssets(): Record<string, AdaptiveAssetMetadata> {
-  bootstrapAdaptiveFeatures();
-  bootstrapAdaptiveLearningContent();
-
-  return [
-    ...listAdaptiveFeatures().map((entry) => entry.metadata),
-    ...listAdaptiveLearningContent().map((entry) => entry.metadata),
-  ].reduce<Record<string, AdaptiveAssetMetadata>>((accumulator, asset) => {
-    accumulator[asset.id] = asset;
-    return accumulator;
-  }, {});
+  return getAdaptiveCatalogAssets().assetLookup;
 }
 
 function createFallbackState(
@@ -164,16 +158,25 @@ export function mapAdaptiveDecisionToUiState(
 }
 
 function buildBanner(
-  hasLearnerProfile: boolean,
+  profileCompleteness: AdaptiveProfileCompleteness,
   tradeState: AdaptiveUiState,
   riskModuleState: AdaptiveUiState,
 ): AdaptiveUiBanner {
-  if (!hasLearnerProfile) {
+  if (profileCompleteness === 'missing') {
     return {
       title: 'Start with sensible defaults',
       message:
         'The trade workbench stays usable without a learner profile. Complete the learner profile to unlock personalized recommendations, emphasis, and learn-first guidance.',
       tone: 'info',
+    };
+  }
+
+  if (profileCompleteness === 'partial') {
+    return {
+      title: 'Complete the learner profile before heavy trading',
+      message:
+        'This workspace is using conservative defaults because the saved learner profile is incomplete. Add knowledge level, goals, and risk preference before stronger trade personalization or graph sync is applied.',
+      tone: 'warning',
     };
   }
 
@@ -206,8 +209,11 @@ export function buildTradeWorkbenchAdaptiveSlice({
   hasLearnerProfile,
   graphRecommendations = [],
 }: BuildTradeWorkbenchAdaptiveSliceOptions): AdaptiveTradeWorkbenchSlice {
+  const normalizedProfile = normalizeLearnerProfile(profile, profile.learnerId);
+  const profileCompleteness = getAdaptiveProfileCompleteness(normalizedProfile, hasLearnerProfile);
   const assetLookup = getTradeWorkbenchAssets();
-  const recommendationLookup = graphRecommendations.reduce<Record<string, AdaptiveGraphAssetRecommendation>>((accumulator, recommendation) => {
+  const normalizedGraphRecommendations = normalizeAdaptiveGraphRecommendations(graphRecommendations, assetLookup).recommendations;
+  const recommendationLookup = normalizedGraphRecommendations.reduce<Record<string, AdaptiveGraphAssetRecommendation>>((accumulator, recommendation) => {
     accumulator[recommendation.assetId] = recommendation;
     return accumulator;
   }, {});
@@ -221,7 +227,7 @@ export function buildTradeWorkbenchAdaptiveSlice({
     throw new Error('Trade workbench adaptive assets were not registered correctly.');
   }
 
-  if (!hasLearnerProfile) {
+  if (profileCompleteness !== 'complete') {
     const chartReview = createFallbackState(tradeFeature, {
       message: 'Charts stay available by default so the trade page remains usable before personalization begins.',
       highlighted: true,
@@ -258,9 +264,10 @@ export function buildTradeWorkbenchAdaptiveSlice({
 
     return {
       hasLearnerProfile,
-      learnerProfile: profile,
-      graphRecommendations,
-      banner: buildBanner(hasLearnerProfile, placeTrade, riskModuleState),
+      profileCompleteness,
+      learnerProfile: normalizedProfile,
+      graphRecommendations: normalizedGraphRecommendations,
+      banner: buildBanner(profileCompleteness, placeTrade, riskModuleState),
       tools: {
         chartReview,
         placeTrade,
@@ -272,7 +279,7 @@ export function buildTradeWorkbenchAdaptiveSlice({
   }
 
   const assets = Object.values(assetLookup);
-  const evaluation = evaluateAdaptivePolicyEngine(assets, profile);
+  const evaluation = evaluateAdaptivePolicyEngine(assets, normalizedProfile);
   const tradeDecision = evaluation.decisionsByAssetId[TRADE_WORKBENCH_FEATURE_ID];
   const tradeTutorialDecision = evaluation.decisionsByAssetId[TRADE_TUTORIAL_ID];
   const tradeHintDecision = evaluation.decisionsByAssetId[TRADE_HELP_HINT_ID];
@@ -327,9 +334,9 @@ export function buildTradeWorkbenchAdaptiveSlice({
     {
       assetId: 'tool-sec-filings',
       title: 'SEC filings',
-      deemphasized: tradeDecision.availabilityState === 'deemphasized' || profile.knowledgeLevel === 'beginner',
+      deemphasized: tradeDecision.availabilityState === 'deemphasized' || normalizedProfile.knowledgeLevel === 'beginner',
       message:
-        tradeDecision.availabilityState === 'deemphasized' || profile.knowledgeLevel === 'beginner'
+        tradeDecision.availabilityState === 'deemphasized' || normalizedProfile.knowledgeLevel === 'beginner'
           ? 'SEC filing review is still available, but it is deemphasized until the learner is more ready for deeper research work.'
           : 'SEC filing shortcuts are available because the learner is ready for deeper company research.',
     },
@@ -344,9 +351,9 @@ export function buildTradeWorkbenchAdaptiveSlice({
       assetId: 'tool-ai-fundamental-analysis',
       title: 'AI fundamental analysis',
       visible: tradeDecision.availabilityState !== 'hidden',
-      deemphasized: tradeDecision.availabilityState === 'deemphasized' || profile.knowledgeLevel !== 'advanced',
+      deemphasized: tradeDecision.availabilityState === 'deemphasized' || normalizedProfile.knowledgeLevel !== 'advanced',
       message:
-        tradeDecision.availabilityState === 'deemphasized' || profile.knowledgeLevel !== 'advanced'
+        tradeDecision.availabilityState === 'deemphasized' || normalizedProfile.knowledgeLevel !== 'advanced'
           ? 'AI fundamental analysis is available but deemphasized as a more advanced tool for this learner state.'
           : 'AI fundamental analysis is fully in scope for this learner profile.',
     },
@@ -373,9 +380,10 @@ export function buildTradeWorkbenchAdaptiveSlice({
 
   return {
     hasLearnerProfile,
-    learnerProfile: profile,
-    graphRecommendations,
-    banner: buildBanner(hasLearnerProfile, placeTrade, riskModuleState),
+    profileCompleteness,
+    learnerProfile: normalizedProfile,
+    graphRecommendations: normalizedGraphRecommendations,
+    banner: buildBanner(profileCompleteness, placeTrade, riskModuleState),
     tools: {
       chartReview,
       placeTrade,
@@ -404,14 +412,14 @@ export async function loadTradeWorkbenchAdaptiveRuntime(
 ): Promise<AdaptiveTradeWorkbenchRuntime> {
   const safeUserId = userId ?? 0;
   const savedProfile = safeUserId > 0 ? await learnerProfileStore.loadByUserId(safeUserId) : null;
-  const profile = savedProfile ?? createDefaultLearnerProfile(`user-${safeUserId || 'guest'}`);
+  const profile = normalizeLearnerProfile(savedProfile, `user-${safeUserId || 'guest'}`);
   let graphRecommendations: AdaptiveGraphAssetRecommendation[] = [];
   let graphSynced = false;
 
-  if (savedProfile) {
+  if (savedProfile && getAdaptiveProfileCompleteness(profile, true) === 'complete') {
     try {
-      await adaptiveGraphRepository.syncAdaptiveLearningGraph(buildAdaptiveGraphSyncPayload(savedProfile));
-      const snapshot = await adaptiveGraphRepository.getLearnerSnapshot(savedProfile.learnerId);
+      await adaptiveGraphRepository.syncAdaptiveLearningGraph(buildAdaptiveGraphSyncPayload(profile));
+      const snapshot = await adaptiveGraphRepository.getLearnerSnapshot(profile.learnerId);
       graphRecommendations = snapshot?.recommendations ?? [];
       graphSynced = true;
     } catch (_error) {
