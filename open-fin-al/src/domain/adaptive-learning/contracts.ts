@@ -53,6 +53,9 @@ export type AdaptiveCategory = FeatureCategory | LearningCategory;
 export const FEATURE_AVAILABILITY_STATES = ['visible', 'hidden', 'locked', 'deemphasized'] as const;
 export type FeatureAvailabilityState = (typeof FEATURE_AVAILABILITY_STATES)[number];
 
+export const DEFAULT_AVAILABILITY_VALUES = ['enabled', 'disabled'] as const;
+export type DefaultAvailability = (typeof DEFAULT_AVAILABILITY_VALUES)[number];
+
 export interface AdaptiveAssetReference {
   assetId: string;
   kind: AdaptiveAssetKind;
@@ -91,6 +94,13 @@ export interface AdaptiveGovernance {
   hideWhenLearnerDismisses?: boolean;
 }
 
+export interface AdaptiveFeatureRelationships {
+  relatedAssetIds: string[];
+  tutorialAssetIds: string[];
+  helpAssetIds: string[];
+  accessibilityAssetIds: string[];
+}
+
 interface AdaptiveAssetMetadataBase {
   id: string;
   key: string;
@@ -103,7 +113,9 @@ interface AdaptiveAssetMetadataBase {
   riskAlignment: RiskPreference[];
   prerequisites: Prerequisite[];
   governance: AdaptiveGovernance;
-  relatedAssetIds: string[];
+  defaultAvailability: DefaultAvailability;
+  isUserFacing: boolean;
+  relationships: AdaptiveFeatureRelationships;
 }
 
 export interface AdaptiveFeatureMetadata extends AdaptiveAssetMetadataBase {
@@ -240,4 +252,19 @@ export interface VisibilityDecision {
   reasons: string[];
   unmetPrerequisites: Prerequisite[];
   applicablePolicyIds: string[];
+}
+
+export interface AdaptiveFeatureGraphNode {
+  id: string;
+  kind: AdaptiveAssetKind;
+  title: string;
+  category: AdaptiveCategory;
+  knowledgeLevel: KnowledgeLevel;
+  defaultAvailability: DefaultAvailability;
+  isUserFacing: boolean;
+  tags: string[];
+  investmentGoals: InvestmentGoal[];
+  riskAlignment: RiskPreference[];
+  prerequisites: Prerequisite[];
+  relationships: AdaptiveFeatureRelationships;
 }
