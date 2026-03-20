@@ -5,3 +5,4 @@ export * from './featureRegistry';
 export * from './learningContentRegistry';
 
 export * from './graph';
+export * from './recommendationEngine';

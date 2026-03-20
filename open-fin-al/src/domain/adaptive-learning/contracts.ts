@@ -220,6 +220,68 @@ export interface RecommendationCandidate<TAsset extends AdaptiveAssetMetadata = 
   supportingPolicyIds: string[];
 }
 
+export type AdaptiveRecommendationSignal =
+  | 'learner-profile-alignment'
+  | 'graph-relationship'
+  | 'prerequisite-readiness'
+  | 'knowledge-progression'
+  | 'feature-unlock-value'
+  | 'feature-governance';
+
+export interface AdaptiveRecommendationReason {
+  signal: AdaptiveRecommendationSignal;
+  weight: number;
+  message: string;
+  details?: Record<string, boolean | number | string | string[]>;
+}
+
+export interface AdaptiveRecommendationScoreBreakdown {
+  learnerProfileAlignment: number;
+  graphRelationship: number;
+  prerequisiteReadiness: number;
+  knowledgeProgression: number;
+  featureUnlockValue: number;
+  governanceCoherence: number;
+  total: number;
+}
+
+export interface AdaptiveRecommendedFeatureUnlock {
+  assetId: string;
+  title: string;
+  availabilityState: FeatureAvailabilityState;
+  unlockValue: number;
+  whyItMatters: string;
+}
+
+export interface AdaptiveRecommendationExplanation {
+  summary: string;
+  reasons: AdaptiveRecommendationReason[];
+  scoreBreakdown: AdaptiveRecommendationScoreBreakdown;
+}
+
+export interface AdaptiveLearningRecommendation<TAsset extends AdaptiveLearningContentMetadata = AdaptiveLearningContentMetadata> {
+  asset: TAsset;
+  score: number;
+  governanceDecision: VisibilityDecision;
+  explanation: AdaptiveRecommendationExplanation;
+  graphReasons: string[];
+  relatedFeatureUnlocks: AdaptiveRecommendedFeatureUnlock[];
+}
+
+export interface AdaptiveFeatureGovernanceSummary {
+  visibleFeatureIds: string[];
+  hiddenFeatureIds: string[];
+  lockedFeatureIds: string[];
+  deemphasizedFeatureIds: string[];
+}
+
+export interface AdaptiveLearningRecommendationResult {
+  generatedAt: string;
+  recommendations: AdaptiveLearningRecommendation[];
+  decisionsByAssetId: Record<string, VisibilityDecision>;
+  featureGovernance: AdaptiveFeatureGovernanceSummary;
+}
+
 export interface AdaptiveAssetSelector {
   assetIds?: string[];
   kinds?: AdaptiveAssetKind[];
