@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import { UserInfo } from '../View/App/UserInfo';
 import { DataContext } from '../View/App';
@@ -14,9 +15,11 @@ const mockUser = {
 
 const renderUserInfo = (user = mockUser, onLogout = jest.fn()) => {
     return render(
-        <DataContext.Provider value={{ user }}>
-            <UserInfo onLogout={onLogout} />
-        </DataContext.Provider>
+        <MemoryRouter>
+            <DataContext.Provider value={{ user }}>
+                <UserInfo onLogout={onLogout} />
+            </DataContext.Provider>
+        </MemoryRouter>
     );
 };
 
@@ -56,6 +59,7 @@ describe('UserInfo', () => {
         expect(screen.getByText('John Doe')).toBeInTheDocument();
         expect(screen.getByText('@johndoe')).toBeInTheDocument();
         expect(screen.getByText('Logout')).toBeInTheDocument();
+        expect(screen.getByText('Learner Profile')).toBeInTheDocument();
     });
 
     test('should hide bubble menu when avatar is clicked again', () => {
@@ -209,12 +213,14 @@ describe('UserInfo', () => {
         const mockExternalClick = jest.fn();
         
         const { container } = render(
-            <div>
-                <button onClick={mockExternalClick}>External Button</button>
-                <DataContext.Provider value={{ user: mockUser }}>
-                    <UserInfo onLogout={mockOnLogout} />
-                </DataContext.Provider>
-            </div>
+            <MemoryRouter>
+                <div>
+                    <button onClick={mockExternalClick}>External Button</button>
+                    <DataContext.Provider value={{ user: mockUser }}>
+                        <UserInfo onLogout={mockOnLogout} />
+                    </DataContext.Provider>
+                </div>
+            </MemoryRouter>
         );
 
         const externalButton = screen.getByText('External Button');

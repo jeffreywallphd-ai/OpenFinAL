@@ -3363,3 +3363,131 @@ body.dark-mode .logout-item:hover {
 
 
 
+
+.bubble-menu-link {
+  color: var(--text-color-dark);
+  text-decoration: none;
+}
+
+.bubble-menu-link:hover {
+  background-color: var(--background-color-highlight-light);
+}
+
+.learner-profile-shell {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 48px;
+}
+
+.learner-profile-card {
+  width: min(920px, 100%);
+  background-color: var(--background-color);
+  border: 1px solid var(--background-color-highlight);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.learner-profile-intro h1 {
+  margin-bottom: 8px;
+}
+
+.learner-profile-intro p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.learner-profile-meta {
+  color: var(--text-color-medium);
+  font-size: 14px;
+}
+
+.learner-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.learner-profile-form section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.learner-profile-form h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.learner-profile-option-grid,
+.learner-profile-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.learner-profile-choice,
+.learner-profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--background-color-highlight);
+  border-radius: 12px;
+  padding: 14px;
+  background-color: var(--hover-color);
+}
+
+.learner-profile-choice {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.learner-profile-choice input {
+  margin-top: 4px;
+}
+
+.learner-profile-field select,
+.learner-profile-field textarea {
+  width: 100%;
+  border: 1px solid var(--background-color-highlight);
+  border-radius: 8px;
+  padding: 10px;
+  background-color: var(--background-color);
+  color: var(--text-color-dark);
+  font: inherit;
+}
+
+.learner-profile-alert {
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 16px 0;
+}
+
+.learner-profile-alert ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.learner-profile-alert-error {
+  background-color: var(--error-light);
+  color: var(--error-color);
+}
+
+.learner-profile-alert-success {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.dark-mode .learner-profile-alert-success {
+  color: #6ee7b7;
+}
+
+.learner-profile-loading {
+  padding: 24px 0;
+  text-align: center;
+}
+
+.learner-profile-actions {
+  display: flex;
+  justify-content: flex-end;
+}

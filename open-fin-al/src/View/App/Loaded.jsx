@@ -31,6 +31,7 @@ import logoNoTextDark from "../../Asset/Image/openfinal_logo_dark_no_text.png";
 import logoDark from "../../Asset/Image/logo-dark.png";
 import navIcon from "../../Asset/Image/navIcon.png";
 import { Settings } from "../Settings";
+import { LearnerProfilePage } from '../LearnerProfile/LearnerProfilePage';
 import Forecast from "../Forecast";
 import { ForecastFeature } from "../ForecastFeature";
 import ForecastModel from "../ForecastModel";
@@ -119,6 +120,7 @@ class AppLoaded extends Component {
                   <li><NavLink to="/forecast"><span className="material-icons">timeline</span> Forecast</NavLink></li>
                   <li><NavLink to="/news"><span className="material-icons">article</span> News</NavLink></li>
                   <li><NavLink to="/learn"><span className="material-icons">school</span> Learn</NavLink></li>
+                  <li><NavLink to="/learner-profile"><span className="material-icons">assignment</span> Learner Profile</NavLink></li>
                   <li><NavLink to="/settings"><span className="material-icons">settings</span> Settings</NavLink></li>
                 </ul>
               </nav>
@@ -137,6 +139,7 @@ class AppLoaded extends Component {
                   <Route path="/learn" element={<Learn />} />
                   <Route path="/learningModule" element={<LearningModuleDetails />} />
                   <Route path="/learningModulePage" element={<LearningModulePage />} />
+                  <Route path="/learner-profile" element={<LearnerProfilePage />} />
                   <Route path="/settings" element={<Settings initialConfiguration={false} checkIfConfigured={this.props.checkIfConfigured} handleConfigured={this.props.handleConfigured} />} />
                   <Route path="/forecast" element={<Forecast />} />
                   <Route path="/forecast-features" element={<ForecastFeature />} />

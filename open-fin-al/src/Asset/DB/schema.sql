@@ -124,6 +124,25 @@ CREATE TABLE IF NOT EXISTS LearningModuleQuizCompletion(
     FOREIGN KEY (userId) REFERENCES User(id)    
 );
 
+CREATE TABLE IF NOT EXISTS LearnerProfile (
+    userId INTEGER PRIMARY KEY,
+    learnerId TEXT NOT NULL,
+    knowledgeLevel TEXT NOT NULL DEFAULT 'unknown',
+    investmentGoalsJson TEXT NOT NULL DEFAULT '[]',
+    riskPreference TEXT NOT NULL DEFAULT 'unknown',
+    confidenceScore INTEGER,
+    selfAssessment TEXT,
+    interestedTagsJson TEXT NOT NULL DEFAULT '[]',
+    experienceMarkersJson TEXT NOT NULL DEFAULT '[]',
+    completedAssetsJson TEXT NOT NULL DEFAULT '[]',
+    progressMarkersJson TEXT NOT NULL DEFAULT '[]',
+    unlockedAssetIdsJson TEXT NOT NULL DEFAULT '[]',
+    hiddenAssetIdsJson TEXT NOT NULL DEFAULT '[]',
+    profileVersion INTEGER NOT NULL DEFAULT 1,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE
+);
+
 INSERT OR IGNORE INTO LearningModule (id, title, description, keywords, timeEstimate, category, fileName) VALUES (9, "Test PPTX", "This is a pptx to html test.", "pptx to html", 10, "ETF", "test.pptx");
 
 INSERT OR IGNORE INTO LearningModule (id, title, description, keywords, timeEstimate, category) VALUES (1, "Introduction to Stocks", "This learning module provides you with an introduction to stocks and the stock market.", "stock market", 10, "Stock");
