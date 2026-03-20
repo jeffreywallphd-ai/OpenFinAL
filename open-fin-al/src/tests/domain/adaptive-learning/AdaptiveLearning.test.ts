@@ -20,13 +20,20 @@ describe('adaptive learning domain contracts', () => {
     knowledgeLevel: 'advanced',
     investmentGoals: ['growth', 'diversification'],
     riskAlignment: ['moderate', 'aggressive'],
-    relatedAssetIds: ['module-screening-basics'],
     governance: {
       defaultAvailabilityState: 'visible',
       eligibleForRecommendation: true,
       eligibleForHighlighting: true,
       lockWhenPrerequisitesUnmet: true,
       hideWhenLearnerDismisses: true,
+    },
+    defaultAvailability: 'enabled',
+    isUserFacing: true,
+    relationships: {
+      relatedAssetIds: ['module-screening-basics'],
+      tutorialAssetIds: ['tutorial-screening-walkthrough'],
+      helpAssetIds: ['help-screening-filter-builder'],
+      accessibilityAssetIds: ['help-keyboard-navigation-global'],
     },
     prerequisites: [
       {
