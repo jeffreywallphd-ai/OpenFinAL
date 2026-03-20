@@ -81,11 +81,16 @@ export interface LearnerProfile {
   knowledgeLevel: KnowledgeLevel;
   investmentGoals: InvestmentGoal[];
   riskPreference: RiskPreference;
+  confidenceScore?: number | null;
+  selfAssessment?: string | null;
   interestedTags: string[];
+  experienceMarkers?: string[];
   completedAssets: CompletionMarker[];
   progressMarkers: ProgressMarker[];
   unlockedAssetIds: string[];
   hiddenAssetIds: string[];
+  profileVersion?: number;
+  updatedAt?: string;
 }
 
 export interface AdaptiveGovernance {

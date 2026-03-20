@@ -5,6 +5,7 @@
 // The authors of this software disclaim all liability for any damages, including incidental, consequential, special, or indirect damages, arising from the use or inability to use this software.
 
 import React, { useContext, useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { DataContext } from '../App';
 
 function UserInfo({ onLogout }) {
@@ -58,6 +59,10 @@ function UserInfo({ onLogout }) {
                         </div>
                     </div>
                     <div className="bubble-divider"></div>
+                    <Link className="bubble-menu-item bubble-menu-link" to="/learner-profile" onClick={() => setBubbleOpen(false)} >
+                        <span className="material-icons">assignment</span>
+                        <span>Learner Profile</span>
+                    </Link>
                     <button 
                         className="bubble-menu-item" 
                         onClick={handleLogout}
