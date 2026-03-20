@@ -13,9 +13,13 @@ import { createStockQuoteRequestModel } from "../../Gateway/Transport/StockTrans
 import { UserInteractor } from "../../Interactor/UserInteractor";
 import { PortfolioInteractor } from "../../Interactor/PortfolioInteractor";
 import { OrderInteractor } from "../../Interactor/OrderInteractor"; 
+import { AdaptiveFeatureSection } from "../adaptive/AdaptiveFeatureSection";
 
 function TimeSeriesChart(props) {
     const [currentQuote, setCurrentQuote] = useState({});
+    const chartToolState = props.adaptiveSlice?.tools?.chartReview;
+    const tradeToolState = props.adaptiveSlice?.tools?.placeTrade;
+    const secFilingsToolState = props.adaptiveSlice?.tools?.secFilings;
     const [chartColor, setChartColor] = useState("#62C0C2");
     const [toolTipStyle, setToolTipStyle] = useState({
         contentStyle: {backgroundColor: '#FFFFFF'},
@@ -253,112 +257,118 @@ function TimeSeriesChart(props) {
     return(<>
             <div className="chartContainer">
                 <h3>{header}</h3>
-                
-                {/* A button group that will eventually be clickable to change the chart timeframe. */}
-                <div className="btn-group">
-                    { props.state.data ? 
-                        (<>
-                            <button disabled={props.state.interval === "1D" ? true: false} onClick={(e) => setInterval("1D")}>1D</button>
-                            <button disabled={props.state.interval === "5D" ? true: false} onClick={(e) => setInterval("5D")}>5D</button>
-                            <button disabled={props.state.interval === "1M" ? true: false} onClick={(e) => setInterval("1M")}>1M</button>
-                            <button disabled={props.state.interval === "6M" ? true: false} onClick={(e) => setInterval("6M")}>6M</button>
-                            <button disabled={props.state.interval === "1Y" ? true: false} onClick={(e) => setInterval("1Y")}>1Y</button>
-                            <button disabled={props.state.interval === "5Y" ? true: false} onClick={(e) => setInterval("5Y")}>5Y</button>
-                            <button disabled={props.state.interval === "Max" ? true: false} onClick={(e) => setInterval("Max")}>Max</button>
-                        </>) :
-                        (<>
-                            <button disabled={true}>1D</button>
-                            <button disabled={true}>5D</button>
-                            <button disabled={true}>1M</button>
-                            <button disabled={true}>6M</button>
-                            <button disabled={true}>1Y</button>
-                            <button disabled={true}>5Y</button>
-                            <button disabled={true}>Max</button>
-                        </>)
-                    }
-                </div>
 
-                {/* The actual chart displaying the data from recharts */}
-                <AreaChart width={700} height={300} key="timeSeries" data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={chartColor} stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
-                        </linearGradient>
-                    </defs>
-                    <XAxis dataKey={props.state.type === "intraday" ? "time" : "date"} domain={[props.state.yAxisStart, props.state.yAxisEnd]} />
-                    <YAxis type="number" domain={[priceMinPadded, priceMaxPadded]} ticks={ticks}/>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                    <Tooltip 
-                        contentStyle={toolTipStyle.contentStyle}
-                        labelStyle={toolTipStyle.labelStyle}
-                        itemStyle={toolTipStyle.itemStyle}
-                    />
-                    <Area type="monotone" dataKey="price" stroke={chartColor} fillOpacity={1} fill="url(#colorArea)" dot={false}/>
-                </AreaChart>
-                <BarChart width={700} height={100} data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <XAxis dataKey={props.state.type === "intraday" ? "time" : "date"} domain={[props.state.yAxisStart, props.state.yAxisEnd]} />
-                    <YAxis domain={[0, props.state.maxVolume]} angle={-45} />
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <Tooltip 
-                        contentStyle={toolTipStyle.contentStyle}
-                        labelStyle={toolTipStyle.labelStyle}
-                        itemStyle={toolTipStyle.itemStyle}
-                    />
-                    <Bar type="monotone" dataKey="volume" fill={chartColor}/>
-                </BarChart>
+                {chartToolState?.visible !== false ? (
+                    <AdaptiveFeatureSection toolState={chartToolState} eyebrow="Core workflow">
+                        <div className="btn-group">
+                            { props.state.data ? 
+                                (<>
+                                    <button disabled={props.state.interval === "1D" ? true: false} onClick={(e) => setInterval("1D")}>1D</button>
+                                    <button disabled={props.state.interval === "5D" ? true: false} onClick={(e) => setInterval("5D")}>5D</button>
+                                    <button disabled={props.state.interval === "1M" ? true: false} onClick={(e) => setInterval("1M")}>1M</button>
+                                    <button disabled={props.state.interval === "6M" ? true: false} onClick={(e) => setInterval("6M")}>6M</button>
+                                    <button disabled={props.state.interval === "1Y" ? true: false} onClick={(e) => setInterval("1Y")}>1Y</button>
+                                    <button disabled={props.state.interval === "5Y" ? true: false} onClick={(e) => setInterval("5Y")}>5Y</button>
+                                    <button disabled={props.state.interval === "Max" ? true: false} onClick={(e) => setInterval("Max")}>Max</button>
+                                </>) :
+                                (<>
+                                    <button disabled={true}>1D</button>
+                                    <button disabled={true}>5D</button>
+                                    <button disabled={true}>1M</button>
+                                    <button disabled={true}>6M</button>
+                                    <button disabled={true}>1Y</button>
+                                    <button disabled={true}>5Y</button>
+                                    <button disabled={true}>Max</button>
+                                </>)
+                            }
+                        </div>
+
+                        <AreaChart width={700} height={300} key="timeSeries" data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={chartColor} stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <XAxis dataKey={props.state.type === "intraday" ? "time" : "date"} domain={[props.state.yAxisStart, props.state.yAxisEnd]} />
+                            <YAxis type="number" domain={[priceMinPadded, priceMaxPadded]} ticks={ticks}/>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                            <Tooltip 
+                                contentStyle={toolTipStyle.contentStyle}
+                                labelStyle={toolTipStyle.labelStyle}
+                                itemStyle={toolTipStyle.itemStyle}
+                            />
+                            <Area type="monotone" dataKey="price" stroke={chartColor} fillOpacity={1} fill="url(#colorArea)" dot={false}/>
+                        </AreaChart>
+                        <BarChart width={700} height={100} data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <XAxis dataKey={props.state.type === "intraday" ? "time" : "date"} domain={[props.state.yAxisStart, props.state.yAxisEnd]} />
+                            <YAxis domain={[0, props.state.maxVolume]} angle={-45} />
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <Tooltip 
+                                contentStyle={toolTipStyle.contentStyle}
+                                labelStyle={toolTipStyle.labelStyle}
+                                itemStyle={toolTipStyle.itemStyle}
+                            />
+                            <Bar type="monotone" dataKey="volume" fill={chartColor}/>
+                        </BarChart>
+                    </AdaptiveFeatureSection>
+                ) : null}
 
                 {props.state.secData ? 
                     <>
-                        <div className="stockOrder">
-                            <p><button onClick={openModal}>Make a Trade</button></p>
-                            {isModalOpen && (
-                                <>
-                                    <div className="modal-backdrop" onClick={() => {
-                                        closeModal();
-                                        clearPriceTimeout();
-                                        }}></div>
-                                    <div className="news-summary-modal">    
-                                        <div className="news-summary-content">
-                                            <div className="news-summary-header">
-                                                <h2>{header}</h2>
-                                                <button onClick={() => {
-                                                    closeModal();
-                                                    clearPriceTimeout();
-                                                    }}>Close</button>
+                        {tradeToolState?.visible !== false ? (
+                            <AdaptiveFeatureSection toolState={tradeToolState} eyebrow="Action gating">
+                                <div className="stockOrder">
+                                    <p><button onClick={openModal} disabled={tradeToolState.locked}>Make a Trade</button></p>
+                                    {isModalOpen && (
+                                        <>
+                                            <div className="modal-backdrop" onClick={() => {
+                                                closeModal();
+                                                clearPriceTimeout();
+                                                }}></div>
+                                            <div className="news-summary-modal">    
+                                                <div className="news-summary-content">
+                                                    <div className="news-summary-header">
+                                                        <h2>{header}</h2>
+                                                        <button onClick={() => {
+                                                            closeModal();
+                                                            clearPriceTimeout();
+                                                            }}>Close</button>
+                                                    </div>
+                                                    <h3>Order Details</h3>
+                                                    {createPortfolio ? 
+                                                        <p>You must create at least one portfolio to place an order.</p> 
+                                                        : 
+                                                        null
+                                                    }
+                                                    <p>
+                                                        Portfolio: 
+                                                        <select value={currentPortfolio || ""}
+                                                            onChange={(e) => {
+                                                                setCreatePortfolio(false); 
+                                                                setCurrentPortfolio(e.target.value);
+                                                            } 
+                                                        }>
+                                                            {portfolios.length === 0 && <option key="" value="">Select a Portfolio...</option>}
+                                                            {portfolios.map((portfolio) => (
+                                                                <option key={portfolio.id} value={portfolio.id}>
+                                                                    {portfolio.name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </p>
+                                                    <p>Price: {formatterCent.format(currentQuote.quotePrice)}</p>
+                                                    <p>Quantity: <input type="text" value={orderQuantity} onChange={(e) => setOrderQuantity(e.target.value)} /></p>
+                                                    <p>Total: {formatterCent.format(currentQuote.quotePrice * orderQuantity)}</p>
+                                                    {orderMessage ? <p>{orderMessage}</p> : null}
+                                                    <button onClick={placeOrder} disabled={createPortfolio || tradeToolState.locked}>Place Order</button>  
+                                                </div>
                                             </div>
-                                            <h3>Order Details</h3>
-                                            {createPortfolio ? 
-                                                <p>You must create at least one portfolio to place an order.</p> 
-                                                : 
-                                                null
-                                            }
-                                            <p>
-                                                Portfolio: 
-                                                <select value={currentPortfolio || ""}
-                                                    onChange={(e) => {
-                                                        setCreatePortfolio(false); 
-                                                        setCurrentPortfolio(e.target.value);
-                                                    } 
-                                                }>
-                                                    {portfolios.length === 0 && <option key="" value="">Select a Portfolio...</option>}
-                                                    {portfolios.map((portfolio) => (
-                                                        <option key={portfolio.id} value={portfolio.id}>
-                                                            {portfolio.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </p>
-                                            <p>Price: {formatterCent.format(currentQuote.quotePrice)}</p>
-                                            <p>Quantity: <input type="text" value={orderQuantity} onChange={(e) => setOrderQuantity(e.target.value)} /></p>
-                                            <p>Total: {formatterCent.format(currentQuote.quotePrice * orderQuantity)}</p>
-                                            {orderMessage ? <p>{orderMessage}</p> : null}
-                                            <button onClick={placeOrder} disabled={createPortfolio}>Place Order</button>  
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                         </div>
+                                        </>
+                                    )}
+                                </div>
+                            </AdaptiveFeatureSection>
+                        ) : null}
                         { props.fundamentalAnalysis ? 
                                 <>
                                     <h3>AI Fundamental Analysis</h3>
@@ -375,22 +385,19 @@ function TimeSeriesChart(props) {
                             <div><span>Industry:</span> {props.state.secData.response.results[0].data.Industry}</div>
                             <div><span>Fiscal Yr End:</span> {props.state.secData.response.results[0].data.FiscalYearEnd}</div>
                             <div><span>Market Cap:</span> {formatter.format(props.state.secData.response.results[0].data.MarketCapitalization)}</div>
-                            <div>
-                                { props.state && props.state.reportLinks ? 
-                                    <>
-                                        <h3>Financial Statements</h3>
-                                        <button onClick={() => window.urlWindow.openUrlWindow(props.state.reportLinks.tenQ)}>
-                                            Most Recent 10-Q
-                                        </button>
-                                        &nbsp;&nbsp;
-                                        <button onClick={() => window.urlWindow.openUrlWindow(props.state.reportLinks.tenK)}>
-                                            Most Recent 10-K
-                                        </button>
-                                    </>
-                                :
-                                    (null)
-                                }
-                            </div>
+                            {props.state && props.state.reportLinks && secFilingsToolState?.visible !== false ? 
+                                <AdaptiveFeatureSection toolState={secFilingsToolState} eyebrow="Research tool" compact={true}>
+                                    <button onClick={() => window.urlWindow.openUrlWindow(props.state.reportLinks.tenQ)}>
+                                        Most Recent 10-Q
+                                    </button>
+                                    &nbsp;&nbsp;
+                                    <button onClick={() => window.urlWindow.openUrlWindow(props.state.reportLinks.tenK)}>
+                                        Most Recent 10-K
+                                    </button>
+                                </AdaptiveFeatureSection>
+                            :
+                                (null)
+                            }
                         </div>
                     </> 
                     : null 

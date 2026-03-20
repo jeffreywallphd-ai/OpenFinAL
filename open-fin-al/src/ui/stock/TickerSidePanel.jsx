@@ -6,9 +6,11 @@
 
 import React from "react";
 import RatioCalculator from "../../Utility/RatioCalculator";
+import { AdaptiveFeatureSection } from "../adaptive/AdaptiveFeatureSection";
 
 function TickerSidePanel(props) {
     const ratioCalculator = new RatioCalculator(props.state.secData.response.results[0]["data"]);
+    const aiToolState = props.adaptiveSlice?.tools?.aiFundamentalAnalysis;
     ratioCalculator.calculateRatios();
 
     return (
@@ -36,15 +38,14 @@ function TickerSidePanel(props) {
                 <p><span>Gross Margin:</span> {ratioCalculator.GPM}</p>
                 <p><span>Operating Margin:</span> {props.state.secData.response.results[0]["data"]["OperatingMarginTTM"]}</p>
             </div>
-            { props.state.secData ?  
-                <div>
-                    <h3>AI Fundamental Analysis</h3>
-                    <button disabled={props.fundamentalAnalysisDisabled} onClick={() => props.handleAIFundamentalAnalysis()}>
+            { props.state.secData && aiToolState?.visible !== false ?  
+                <AdaptiveFeatureSection toolState={aiToolState} eyebrow="Advanced tool" compact={true}>
+                    <button disabled={props.fundamentalAnalysisDisabled || aiToolState.locked} onClick={() => props.handleAIFundamentalAnalysis()}>
                         Analyze Financial Ratios
                     </button>
                     <br/>
                     <div className={`small-loader ${props.analysisLoading ? '' : 'hidden'}`}></div>
-                </div>
+                </AdaptiveFeatureSection>
             :
                 (null)
             }

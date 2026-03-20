@@ -5,8 +5,9 @@
 // The authors of this software disclaim all liability for any damages, including incidental, consequential, special, or indirect damages, arising from the use or inability to use this software.
 
 import React, { useContext, useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
 import { TickerSearchBar, TickerSidePanel, TimeSeriesChart } from "../ui/stock";
+import { AdaptiveLearningPath, AdaptiveTradeWorkbenchBanner } from "../ui/adaptive";
+import { useAdaptiveTradeWorkbenchGovernance } from "../ui/adaptive/useAdaptiveTradeWorkbenchGovernance";
 import { DataContext } from "./App";
 
 import { SecInteractor } from "../Interactor/SecInteractor";
@@ -16,13 +17,13 @@ import { useHeader } from "./App/LoadedLayout";
 
 
 function Stock(props) {
-    const location = useLocation();
-    const { state, setState } = useContext(DataContext);
+    const { state, setState, user } = useContext(DataContext);
     const [ fundamentalAnalysis, setFundamentalAnalysis ] = useState(null);
     const [ fundamentalAnalysisDisabled, setFundamentalAnalysisDisabled ] = useState(false);
     const [ analysisLoading, setAnalysisLoading ] = useState(false);
 
     const { setHeader } = useHeader();
+    const { adaptiveSlice, adaptiveLoading, graphSynced } = useAdaptiveTradeWorkbenchGovernance(user?.id);
 
     useEffect(() => {
         setHeader({
@@ -157,6 +158,8 @@ function Stock(props) {
                     {state ?
                         ( 
                             <>
+                                <AdaptiveTradeWorkbenchBanner banner={adaptiveSlice.banner} graphSynced={graphSynced} />
+                                {adaptiveLoading ? <p className="adaptive-workbench-status">Refreshing adaptive guidance…</p> : null}
                                 <TickerSearchBar state={state} handleDataChange={handleDataChange}/>
                             
                                 { state.isLoading === true ? (
@@ -169,7 +172,8 @@ function Stock(props) {
                                     <p>Data Source: {state.dataSource}</p>   
                                 )}
 
-                                <TimeSeriesChart state={state} fundamentalAnalysis={fundamentalAnalysis} handleDataChange={handleDataChange} />
+                                <TimeSeriesChart state={state} fundamentalAnalysis={fundamentalAnalysis} handleDataChange={handleDataChange} adaptiveSlice={adaptiveSlice} />
+                                <AdaptiveLearningPath assets={adaptiveSlice.learningAssets} />
                             </>
                         ) :   
                         (<p>Loading Context...</p>)
@@ -178,7 +182,7 @@ function Stock(props) {
                 <div className="sidePanel">
                     { state && state.secData ? (
                         <>
-                            <TickerSidePanel state={state} analysisLoading={analysisLoading} handleAIFundamentalAnalysis={handleAIFundamentalAnalysis} fundamentalAnalysisDisabled={fundamentalAnalysisDisabled} />
+                            <TickerSidePanel state={state} analysisLoading={analysisLoading} handleAIFundamentalAnalysis={handleAIFundamentalAnalysis} fundamentalAnalysisDisabled={fundamentalAnalysisDisabled} adaptiveSlice={adaptiveSlice} />
                         </>
                     ) : (null)}
                 </div>
