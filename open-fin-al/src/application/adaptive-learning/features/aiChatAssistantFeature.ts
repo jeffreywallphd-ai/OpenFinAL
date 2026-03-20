@@ -19,6 +19,7 @@ export const aiChatAssistantFeature = registerAdaptiveFeature(
       eligibleForHighlighting: true,
       visibleDuringOnboarding: false,
       hideWhenLearnerDismisses: true,
+      criticality: 'optional',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,

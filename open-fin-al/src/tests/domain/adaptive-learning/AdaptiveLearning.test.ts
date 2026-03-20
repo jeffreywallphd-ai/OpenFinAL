@@ -2,9 +2,11 @@ import {
   AdaptiveFeatureMetadata,
   AdaptivePolicy,
   LearnerProfile,
+  LearningModuleMetadata,
+  compareKnowledgeLevels,
+  evaluateAdaptivePolicyEngine,
   evaluatePrerequisite,
   evaluateVisibilityDecision,
-  compareKnowledgeLevels,
   matchesAdaptiveAssetSelector,
 } from '../../../domain/adaptive-learning';
 
@@ -26,6 +28,7 @@ describe('adaptive learning domain contracts', () => {
       eligibleForHighlighting: true,
       lockWhenPrerequisitesUnmet: true,
       hideWhenLearnerDismisses: true,
+      criticality: 'optional',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,
@@ -89,13 +92,29 @@ describe('adaptive learning domain contracts', () => {
     ).toBe(false);
   });
 
-  test('locks assets and highlights them for later learning when prerequisites are unmet', () => {
-    const decision = evaluateVisibilityDecision(feature, beginnerProfile, []);
+  test('locks assets and suggests a later unlock path when prerequisites are unmet', () => {
+    const supportingModule: LearningModuleMetadata = {
+      ...feature,
+      id: 'module-screening-basics',
+      key: 'screening-basics',
+      kind: 'learning-module' as const,
+      category: 'security-analysis' as const,
+      title: 'Screening basics',
+      supportedModalities: ['reading'],
+    };
+
+    const decision = evaluateVisibilityDecision(feature, beginnerProfile, [], {
+      [feature.id]: feature,
+      [supportingModule.id]: supportingModule,
+    });
 
     expect(decision.availabilityState).toBe('locked');
     expect(decision.highlightForLearningLater).toBe(true);
+    expect(decision.suggestedForLaterUnlocking).toBe(true);
     expect(decision.unmetPrerequisites).toHaveLength(2);
+    expect(decision.supportingAssetIds).toContain('module-screening-basics');
     expect(decision.recommended).toBe(false);
+    expect(decision.explanation.debug.knowledgeFit).toBe('below-target');
   });
 
   test('applies serializable adaptive policies to recommendation and emphasis decisions', () => {
@@ -178,5 +197,47 @@ describe('adaptive learning domain contracts', () => {
     expect(decision.highlightForLearningLater).toBe(false);
     expect(decision.applicablePolicyIds).toEqual(['policy-recommend-screening']);
     expect(decision.reasons).toContain('The learner is ready for a more advanced screening tool.');
+    expect(decision.explanation.debug.goalAlignment).toBe('partial');
+  });
+
+  test('evaluates a mixed catalog and summarizes overload-reduction outcomes', () => {
+    const module: LearningModuleMetadata = {
+      id: 'module-screening-basics',
+      key: 'screening-basics',
+      kind: 'learning-module' as const,
+      title: 'Screening basics module',
+      description: 'Introduces the screening workflow.',
+      category: 'security-analysis' as const,
+      tags: ['stocks', 'screening'],
+      knowledgeLevel: 'beginner' as const,
+      investmentGoals: ['growth'],
+      riskAlignment: ['moderate'],
+      prerequisites: [],
+      governance: {
+        defaultAvailabilityState: 'visible',
+        eligibleForRecommendation: true,
+        eligibleForHighlighting: true,
+        criticality: 'core',
+      },
+      defaultAvailability: 'enabled',
+      isUserFacing: true,
+      relationships: {
+        relatedAssetIds: [feature.id],
+        relatedFeatureIds: [feature.id],
+        tutorialAssetIds: [],
+        helpAssetIds: [],
+        accessibilityAssetIds: [],
+      },
+      supportedModalities: ['reading'],
+    };
+
+    const result = evaluateAdaptivePolicyEngine([feature, module], beginnerProfile, []);
+
+    expect(result.decisionsByAssetId['module-screening-basics'].availabilityState).toBe('visible');
+    expect(result.decisionsByAssetId['module-screening-basics'].recommended).toBe(true);
+    expect(result.decisionsByAssetId[feature.id].availabilityState).toBe('locked');
+    expect(result.summary.visibleAssetIds).toEqual(['module-screening-basics']);
+    expect(result.summary.lockedAssetIds).toEqual([feature.id]);
+    expect(result.summary.suggestedForLaterUnlockingAssetIds).toEqual([feature.id]);
   });
 });

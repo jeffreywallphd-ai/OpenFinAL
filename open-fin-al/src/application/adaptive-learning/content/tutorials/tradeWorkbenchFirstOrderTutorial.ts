@@ -24,6 +24,7 @@ export const tradeWorkbenchFirstOrderTutorial = registerAdaptiveLearningContent(
       eligibleForRecommendation: true,
       eligibleForHighlighting: true,
       lockWhenPrerequisitesUnmet: true,
+      criticality: 'standard',
     },
     defaultAvailability: 'enabled',
     isUserFacing: true,
