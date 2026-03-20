@@ -6,9 +6,7 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { TimeSeriesChart } from "./Stock/TimeSeriesChart";
-import { TickerSearchBar } from "./Stock/TickerSearchBar";
-import { TickerSidePanel } from "./Stock/TickerSidePanel";
+import { TickerSearchBar, TickerSidePanel, TimeSeriesChart } from "../ui/stock";
 import { DataContext } from "./App";
 
 import { SecInteractor } from "../Interactor/SecInteractor";

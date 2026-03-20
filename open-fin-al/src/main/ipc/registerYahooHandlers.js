@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle } = require('../../shared/ipc');
 
 function registerYahooHandlers({ ipcMain, yahooFinanceService }) {
   registerHandle(ipcMain, ipcContracts.yahooFinance.chart, ({ ticker, options }) => yahooFinanceService.yahooChart(ticker, options));

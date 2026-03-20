@@ -8,6 +8,11 @@ module.exports = {
     "/node_modules/"
   ],
   moduleNameMapper: {
+    '^@domain/(.*)$': '<rootDir>/src/domain/$1',
+    '^@application/(.*)$': '<rootDir>/src/application/$1',
+    '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
+    '^@ui/(.*)$': '<rootDir>/src/ui/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
     '\\.(css|less|scss|sass)$': '<rootDir>/src/tests/__mocks__/styleMock.js',
     '\\.(jpg|jpeg|png|gif|svg|webp)$': 'jest-transform-stub',
     '@xenova/transformers': '<rootDir>/src/tests/__mocks__/transformers.js',

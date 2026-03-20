@@ -1,4 +1,4 @@
-const { ipcContracts, registerHandle, registerListener } = require('../../IPC/contracts');
+const { ipcContracts, registerHandle, registerListener } = require('../../shared/ipc');
 const { extractTextFromUrlWindowSilently } = require('../window/createUrlWindow');
 
 function registerWindowHandlers({ ipcMain, createUrlWindow, getUrlWindow, setUrlWindow }) {

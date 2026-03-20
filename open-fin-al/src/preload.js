@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 const { contextBridge, ipcRenderer } = require('electron');
-const { invokeContract, ipcContracts, sendContract } = require('./IPC/contracts');
+const { invokeContract, ipcContracts, sendContract } = require('./shared/ipc');
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer,

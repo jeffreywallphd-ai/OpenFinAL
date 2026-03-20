@@ -1,5 +1,5 @@
-import { StockSearchCriteria } from '../../../Entity/Stock/StockSearchCriteria';
-import { StockTimeSeries } from '../../../Entity/Stock/StockTimeSeries';
+import { StockSearchCriteria } from '../../../domain/stock/StockSearchCriteria';
+import { StockTimeSeries } from '../../../domain/stock/StockTimeSeries';
 import { YFinanceStockGateway } from '../../../Gateway/Data/StockGateway/YFinanceStockGateway';
 
 describe('YFinanceStockGateway', () => {

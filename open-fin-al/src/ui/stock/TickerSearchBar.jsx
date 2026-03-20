@@ -8,7 +8,7 @@ import React, { useEffect } from "react";
 import { StockInteractor } from "../../Interactor/StockInteractor";
 import { FinancialRatioInteractor } from "../../Interactor/FinancialRatioInteractor";
 import { JSONRequest } from "../../Gateway/Request/JSONRequest";
-import { SymbolSearchBar } from "../Shared/SymbolSearchBar";
+import { SymbolSearchBar } from "../../View/Shared/SymbolSearchBar";
 
 function  TickerSearchBar(props) {
     //TODO: implement error handling
