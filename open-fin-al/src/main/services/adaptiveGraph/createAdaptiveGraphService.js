@@ -1,5 +1,8 @@
 function createAdaptiveGraphService({ graphRuntime }) {
   return {
+    async syncAdaptiveGraphCatalog(payload) {
+      return graphRuntime.syncAdaptiveGraphCatalog(payload);
+    },
     async syncAdaptiveLearningGraph(payload) {
       return graphRuntime.syncAdaptiveLearningGraph(payload);
     },

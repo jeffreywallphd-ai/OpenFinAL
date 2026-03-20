@@ -1,6 +1,7 @@
 import { ElectronAdaptiveGraphRepository } from '../../../infrastructure/electron/ElectronAdaptiveGraphRepository';
 
 describe('ElectronAdaptiveGraphRepository', () => {
+  const syncAdaptiveGraphCatalog = jest.fn();
   const syncAdaptiveLearningGraph = jest.fn();
   const getLearnerSnapshot = jest.fn();
   const findRelevantAssets = jest.fn();
@@ -8,6 +9,7 @@ describe('ElectronAdaptiveGraphRepository', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (window as any).adaptiveGraph = {
+      syncAdaptiveGraphCatalog,
       syncAdaptiveLearningGraph,
       getLearnerSnapshot,
       findRelevantAssets,
@@ -15,6 +17,13 @@ describe('ElectronAdaptiveGraphRepository', () => {
   });
 
   it('delegates graph synchronization to the preload bridge', async () => {
+    syncAdaptiveGraphCatalog.mockResolvedValue({
+      assetCount: 7,
+      relationshipCount: 12,
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      backend: 'neo4j',
+      mode: 'incremental',
+    });
     syncAdaptiveLearningGraph.mockResolvedValue({
       learnerId: 'learner-1',
       assetCount: 7,
@@ -23,6 +32,11 @@ describe('ElectronAdaptiveGraphRepository', () => {
     });
 
     const repository = new ElectronAdaptiveGraphRepository();
+    await expect(repository.syncAdaptiveGraphCatalog({
+      assetNodes: [],
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      mode: 'incremental',
+    })).resolves.toMatchObject({ backend: 'neo4j', mode: 'incremental' });
     await expect(repository.syncAdaptiveLearningGraph({
       learnerProfile: {
         learnerId: 'learner-1',
@@ -40,6 +54,10 @@ describe('ElectronAdaptiveGraphRepository', () => {
       syncedAt: '2026-03-20T12:00:00.000Z',
     })).resolves.toMatchObject({ backend: 'neo4j' });
 
+    expect(syncAdaptiveGraphCatalog).toHaveBeenCalledWith(expect.objectContaining({
+      syncedAt: '2026-03-20T12:00:00.000Z',
+      mode: 'incremental',
+    }));
     expect(syncAdaptiveLearningGraph).toHaveBeenCalledWith(expect.objectContaining({
       syncedAt: '2026-03-20T12:00:00.000Z',
     }));

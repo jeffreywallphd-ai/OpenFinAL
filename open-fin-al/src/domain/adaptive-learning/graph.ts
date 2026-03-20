@@ -2,11 +2,14 @@ import {
   AdaptiveAssetKind,
   AdaptiveCategory,
   AdaptiveFeatureGraphNode,
+  AdaptiveGovernance,
+  AdaptiveNextStep,
   InvestmentGoal,
   KnowledgeLevel,
   LearnerProfile,
   ProgressMarker,
   RiskPreference,
+  SupportedModality,
 } from './contracts';
 
 export interface AdaptiveGraphLearnerProfileNode {
@@ -22,6 +25,35 @@ export interface AdaptiveGraphLearnerProfileNode {
   unlockedAssetIds: string[];
   hiddenAssetIds: string[];
   updatedAt?: string;
+}
+
+
+export interface AdaptiveGraphCatalogAssetNode extends AdaptiveFeatureGraphNode {
+  key: string;
+  description: string;
+  governance: AdaptiveGovernance;
+  source?: string;
+  registeredAt?: string;
+  relatedFeatureIds: string[];
+  tutorialForAssetId?: string;
+  hintForAssetId?: string;
+  estimatedDurationMinutes?: number;
+  supportedModalities?: SupportedModality[];
+  recommendedNextSteps?: AdaptiveNextStep[];
+}
+
+export interface AdaptiveGraphCatalogSyncPayload {
+  assetNodes: AdaptiveGraphCatalogAssetNode[];
+  syncedAt: string;
+  mode?: 'incremental' | 'full';
+}
+
+export interface AdaptiveGraphCatalogSyncResult {
+  assetCount: number;
+  relationshipCount: number;
+  syncedAt: string;
+  backend: string;
+  mode: 'incremental' | 'full';
 }
 
 export interface AdaptiveGraphSyncPayload {

@@ -82,6 +82,7 @@ contextBridge.exposeInMainWorld('config', {
 });
 
 contextBridge.exposeInMainWorld('adaptiveGraph', {
+  syncAdaptiveGraphCatalog: (payload) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.syncAdaptiveGraphCatalog, payload),
   syncAdaptiveLearningGraph: (payload) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.syncAdaptiveLearningGraph, payload),
   getLearnerSnapshot: (learnerId) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.getLearnerSnapshot, learnerId),
   findRelevantAssets: (query) => invokeContract(ipcRenderer, ipcContracts.adaptiveGraph.findRelevantAssets, query),
