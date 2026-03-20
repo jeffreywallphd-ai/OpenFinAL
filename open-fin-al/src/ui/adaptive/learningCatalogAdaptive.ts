@@ -1,0 +1,180 @@
+import { buildAdaptiveGraphSyncPayload } from '@application/adaptive-learning/adaptiveGraphSnapshot';
+import { bootstrapAdaptiveFeatures } from '@application/adaptive-learning/bootstrapAdaptiveFeatures';
+import { bootstrapAdaptiveLearningContent } from '@application/adaptive-learning/bootstrapAdaptiveLearningContent';
+import { createDefaultLearnerProfile } from '@application/adaptive-learning/learnerProfile';
+import { IAdaptiveGraphRepository } from '@application/services/IAdaptiveGraphRepository';
+import { ILearnerProfileStore } from '@application/services/ILearnerProfileStore';
+import {
+  AdaptiveGraphAssetRecommendation,
+  AdaptiveLearningRecommendation,
+  AdaptiveLearningRecommendationResult,
+  LearnerProfile,
+  buildAdaptiveLearningRecommendations,
+  listAdaptiveFeatures,
+  listAdaptiveLearningContent,
+} from '@domain/adaptive-learning';
+import { ElectronAdaptiveGraphRepository } from '@infrastructure/electron/ElectronAdaptiveGraphRepository';
+import { ElectronLearnerProfileStore } from '@infrastructure/electron/ElectronLearnerProfileStore';
+
+export interface AdaptiveLearningCatalogBanner {
+  title: string;
+  message: string;
+  tone: 'info' | 'success' | 'warning';
+}
+
+export interface AdaptiveLearningCatalogRuntime {
+  hasLearnerProfile: boolean;
+  graphSynced: boolean;
+  learnerProfile: LearnerProfile;
+  banner: AdaptiveLearningCatalogBanner;
+  recommendationResult: AdaptiveLearningRecommendationResult;
+}
+
+export interface AdaptiveLearningRecommendationCard {
+  assetId: string;
+  title: string;
+  kind: AdaptiveLearningRecommendation['asset']['kind'];
+  score: number;
+  summary: string;
+  rationale: string[];
+  featureUnlocks: Array<{
+    assetId: string;
+    title: string;
+    availabilityState: string;
+    whyItMatters: string;
+  }>;
+  graphReasons: string[];
+  availabilityState: string;
+}
+
+export interface AdaptiveLearningCatalogViewModel extends AdaptiveLearningCatalogRuntime {
+  cards: AdaptiveLearningRecommendationCard[];
+}
+
+function getCatalogAssets() {
+  bootstrapAdaptiveFeatures();
+  bootstrapAdaptiveLearningContent();
+
+  return {
+    features: listAdaptiveFeatures().map((entry) => entry.metadata),
+    learningAssets: listAdaptiveLearningContent().map((entry) => entry.metadata),
+  };
+}
+
+function buildBanner(
+  hasLearnerProfile: boolean,
+  graphSynced: boolean,
+  recommendationResult: AdaptiveLearningRecommendationResult,
+): AdaptiveLearningCatalogBanner {
+  if (!hasLearnerProfile) {
+    return {
+      title: 'Start with the learning foundations',
+      message:
+        'These starter recommendations use catalog defaults. Completing the learner profile enables graph-backed ranking and stronger feature unlock guidance.',
+      tone: 'info',
+    };
+  }
+
+  if (recommendationResult.featureGovernance.lockedFeatureIds.length > 0) {
+    return {
+      title: 'Learn to unlock product features',
+      message:
+        'The recommendation engine is prioritizing learning assets that help explain or unlock currently locked features before advanced tools compete for attention.',
+      tone: 'warning',
+    };
+  }
+
+  return {
+    title: graphSynced ? 'Graph-backed learning recommendations' : 'Adaptive learning recommendations',
+    message: graphSynced
+      ? 'These recommendations combine learner profile fit, adaptive graph signals, and current feature governance states.'
+      : 'These recommendations combine learner profile fit and local feature governance while the graph remains unavailable.',
+    tone: 'success',
+  };
+}
+
+export function buildAdaptiveLearningCatalogViewModel(runtime: AdaptiveLearningCatalogRuntime): AdaptiveLearningCatalogViewModel {
+  return {
+    ...runtime,
+    cards: runtime.recommendationResult.recommendations.map((recommendation) => ({
+      assetId: recommendation.asset.id,
+      title: recommendation.asset.title,
+      kind: recommendation.asset.kind,
+      score: recommendation.score,
+      summary: recommendation.explanation.summary,
+      rationale: recommendation.explanation.reasons.slice(0, 3).map((reason) => reason.message),
+      featureUnlocks: recommendation.relatedFeatureUnlocks.map((unlock) => ({
+        assetId: unlock.assetId,
+        title: unlock.title,
+        availabilityState: unlock.availabilityState,
+        whyItMatters: unlock.whyItMatters,
+      })),
+      graphReasons: recommendation.graphReasons,
+      availabilityState: recommendation.governanceDecision.availabilityState,
+    })),
+  };
+}
+
+export function buildAdaptiveLearningCatalogRuntime({
+  profile,
+  hasLearnerProfile,
+  graphRecommendations = [],
+}: {
+  profile: LearnerProfile;
+  hasLearnerProfile: boolean;
+  graphRecommendations?: AdaptiveGraphAssetRecommendation[];
+}): AdaptiveLearningCatalogRuntime {
+  const { features, learningAssets } = getCatalogAssets();
+  const recommendationResult = buildAdaptiveLearningRecommendations({
+    features,
+    learningAssets,
+    profile,
+    graphRecommendations,
+    limit: 3,
+  });
+
+  return {
+    hasLearnerProfile,
+    graphSynced: graphRecommendations.length > 0,
+    learnerProfile: profile,
+    banner: buildBanner(hasLearnerProfile, graphRecommendations.length > 0, recommendationResult),
+    recommendationResult,
+  };
+}
+
+export async function loadAdaptiveLearningCatalogRuntime(
+  userId: number | null | undefined,
+  {
+    learnerProfileStore = new ElectronLearnerProfileStore(),
+    adaptiveGraphRepository = new ElectronAdaptiveGraphRepository(),
+  }: {
+    learnerProfileStore?: ILearnerProfileStore;
+    adaptiveGraphRepository?: IAdaptiveGraphRepository;
+  } = {},
+): Promise<AdaptiveLearningCatalogRuntime> {
+  const safeUserId = userId ?? 0;
+  const savedProfile = safeUserId > 0 ? await learnerProfileStore.loadByUserId(safeUserId) : null;
+  const profile = savedProfile ?? createDefaultLearnerProfile(`user-${safeUserId || 'guest'}`);
+  let graphRecommendations: AdaptiveGraphAssetRecommendation[] = [];
+  let graphSynced = false;
+
+  if (savedProfile) {
+    try {
+      await adaptiveGraphRepository.syncAdaptiveLearningGraph(buildAdaptiveGraphSyncPayload(savedProfile));
+      const snapshot = await adaptiveGraphRepository.getLearnerSnapshot(savedProfile.learnerId);
+      graphRecommendations = snapshot?.recommendations ?? [];
+      graphSynced = true;
+    } catch (_error) {
+      graphSynced = false;
+    }
+  }
+
+  return {
+    ...buildAdaptiveLearningCatalogRuntime({
+      profile,
+      hasLearnerProfile: Boolean(savedProfile),
+      graphRecommendations,
+    }),
+    graphSynced,
+  };
+}
