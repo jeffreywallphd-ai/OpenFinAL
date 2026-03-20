@@ -32,6 +32,7 @@ export const tradeWorkbenchFeature = registerAdaptiveFeature(
     isUserFacing: true,
     relationships: {
       relatedAssetIds: ['feature-portfolio-dashboard', 'feature-investment-news'],
+      relatedFeatureIds: ['feature-portfolio-dashboard', 'feature-investment-news'],
       tutorialAssetIds: ['tutorial-trade-workbench-first-order'],
       helpAssetIds: ['help-trade-workbench-order-entry'],
       accessibilityAssetIds: ['help-keyboard-navigation-global'],

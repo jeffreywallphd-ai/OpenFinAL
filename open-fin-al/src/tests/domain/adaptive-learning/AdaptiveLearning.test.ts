@@ -31,6 +31,7 @@ describe('adaptive learning domain contracts', () => {
     isUserFacing: true,
     relationships: {
       relatedAssetIds: ['module-screening-basics'],
+      relatedFeatureIds: [],
       tutorialAssetIds: ['tutorial-screening-walkthrough'],
       helpAssetIds: ['help-screening-filter-builder'],
       accessibilityAssetIds: ['help-keyboard-navigation-global'],

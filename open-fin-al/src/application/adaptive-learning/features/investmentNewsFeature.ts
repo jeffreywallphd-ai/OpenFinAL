@@ -24,6 +24,7 @@ export const investmentNewsFeature = registerAdaptiveFeature(
     isUserFacing: true,
     relationships: {
       relatedAssetIds: ['feature-trade-workbench'],
+      relatedFeatureIds: ['feature-trade-workbench'],
       tutorialAssetIds: ['tutorial-investment-news-basics'],
       helpAssetIds: ['help-investment-news-search'],
       accessibilityAssetIds: ['help-keyboard-navigation-global'],

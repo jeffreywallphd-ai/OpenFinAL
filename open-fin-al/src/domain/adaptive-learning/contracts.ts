@@ -48,6 +48,9 @@ export const LEARNING_CATEGORIES = [
 ] as const;
 export type LearningCategory = (typeof LEARNING_CATEGORIES)[number];
 
+export const SUPPORTED_MODALITIES = ['reading', 'video', 'interactive', 'guided-workflow', 'chat', 'reference'] as const;
+export type SupportedModality = (typeof SUPPORTED_MODALITIES)[number];
+
 export type AdaptiveCategory = FeatureCategory | LearningCategory;
 
 export const FEATURE_AVAILABILITY_STATES = ['visible', 'hidden', 'locked', 'deemphasized'] as const;
@@ -94,11 +97,19 @@ export interface AdaptiveGovernance {
   hideWhenLearnerDismisses?: boolean;
 }
 
-export interface AdaptiveFeatureRelationships {
+export interface AdaptiveAssetRelationships {
   relatedAssetIds: string[];
+  relatedFeatureIds: string[];
   tutorialAssetIds: string[];
   helpAssetIds: string[];
   accessibilityAssetIds: string[];
+}
+
+export interface AdaptiveNextStep {
+  assetId?: string;
+  title: string;
+  reason: string;
+  unlockValue?: number;
 }
 
 interface AdaptiveAssetMetadataBase {
@@ -115,7 +126,14 @@ interface AdaptiveAssetMetadataBase {
   governance: AdaptiveGovernance;
   defaultAvailability: DefaultAvailability;
   isUserFacing: boolean;
-  relationships: AdaptiveFeatureRelationships;
+  relationships: AdaptiveAssetRelationships;
+}
+
+interface AdaptiveLearningContentMetadataBase extends AdaptiveAssetMetadataBase {
+  kind: 'learning-module' | 'tutorial' | 'help-hint';
+  supportedModalities: SupportedModality[];
+  unlockValue?: number;
+  recommendedNextSteps?: AdaptiveNextStep[];
 }
 
 export interface AdaptiveFeatureMetadata extends AdaptiveAssetMetadataBase {
@@ -123,19 +141,19 @@ export interface AdaptiveFeatureMetadata extends AdaptiveAssetMetadataBase {
   category: FeatureCategory;
 }
 
-export interface LearningModuleMetadata extends AdaptiveAssetMetadataBase {
+export interface LearningModuleMetadata extends AdaptiveLearningContentMetadataBase {
   kind: 'learning-module';
   category: LearningCategory;
   estimatedDurationMinutes?: number;
 }
 
-export interface TutorialMetadata extends AdaptiveAssetMetadataBase {
+export interface TutorialMetadata extends AdaptiveLearningContentMetadataBase {
   kind: 'tutorial';
   category: LearningCategory;
   tutorialForAssetId?: string;
 }
 
-export interface HelpHintMetadata extends AdaptiveAssetMetadataBase {
+export interface HelpHintMetadata extends AdaptiveLearningContentMetadataBase {
   kind: 'help-hint';
   category: LearningCategory;
   hintForAssetId?: string;
@@ -146,6 +164,8 @@ export type AdaptiveAssetMetadata =
   | LearningModuleMetadata
   | TutorialMetadata
   | HelpHintMetadata;
+
+export type AdaptiveLearningContentMetadata = LearningModuleMetadata | TutorialMetadata | HelpHintMetadata;
 
 export type Prerequisite =
   | {
@@ -266,5 +286,8 @@ export interface AdaptiveFeatureGraphNode {
   investmentGoals: InvestmentGoal[];
   riskAlignment: RiskPreference[];
   prerequisites: Prerequisite[];
-  relationships: AdaptiveFeatureRelationships;
+  relationships: AdaptiveAssetRelationships;
+  supportedModalities?: SupportedModality[];
+  unlockValue?: number;
+  recommendedNextSteps?: AdaptiveNextStep[];
 }
