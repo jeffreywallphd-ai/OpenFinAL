@@ -6,12 +6,14 @@ import { IAdaptiveGraphRepository } from '@application/services/IAdaptiveGraphRe
 import { ILearnerProfileStore } from '@application/services/ILearnerProfileStore';
 import {
   AdaptiveGraphAssetRecommendation,
+  AdaptiveHelpHintSelectionCandidate,
   AdaptiveLearningRecommendation,
   AdaptiveLearningRecommendationResult,
   LearnerProfile,
   buildAdaptiveLearningRecommendations,
   listAdaptiveFeatures,
   listAdaptiveLearningContent,
+  selectAdaptiveHelpHints,
 } from '@domain/adaptive-learning';
 import { ElectronAdaptiveGraphRepository } from '@infrastructure/electron/ElectronAdaptiveGraphRepository';
 import { ElectronLearnerProfileStore } from '@infrastructure/electron/ElectronLearnerProfileStore';
@@ -28,6 +30,7 @@ export interface AdaptiveLearningCatalogRuntime {
   learnerProfile: LearnerProfile;
   banner: AdaptiveLearningCatalogBanner;
   recommendationResult: AdaptiveLearningRecommendationResult;
+  contextualHelpHint: AdaptiveHelpHintSelectionCandidate | null;
 }
 
 export interface AdaptiveLearningRecommendationCard {
@@ -47,8 +50,24 @@ export interface AdaptiveLearningRecommendationCard {
   availabilityState: string;
 }
 
-export interface AdaptiveLearningCatalogViewModel extends AdaptiveLearningCatalogRuntime {
+export interface AdaptiveLearningCatalogViewModel {
+  hasLearnerProfile: boolean;
+  graphSynced: boolean;
+  learnerProfile: LearnerProfile;
+  banner: AdaptiveLearningCatalogBanner;
+  recommendationResult: AdaptiveLearningRecommendationResult;
+  contextualHelpHint: AdaptiveContextualHelpHintViewModel | null;
   cards: AdaptiveLearningRecommendationCard[];
+}
+
+export interface AdaptiveContextualHelpHintViewModel {
+  assetId: string;
+  title: string;
+  description: string;
+  body: string;
+  reasons: string[];
+  graphReasons: string[];
+  availabilityState: string;
 }
 
 function getCatalogAssets() {
@@ -59,6 +78,31 @@ function getCatalogAssets() {
     features: listAdaptiveFeatures().map((entry) => entry.metadata),
     learningAssets: listAdaptiveLearningContent().map((entry) => entry.metadata),
   };
+}
+
+function buildCatalogContextualHelpHint(
+  profile: LearnerProfile,
+  features: ReturnType<typeof getCatalogAssets>['features'],
+  learningAssets: ReturnType<typeof getCatalogAssets>['learningAssets'],
+  graphRecommendations: AdaptiveGraphAssetRecommendation[],
+): AdaptiveHelpHintSelectionCandidate | null {
+  const helpHints = learningAssets.filter((asset) => asset.kind === 'help-hint');
+
+  return (
+    selectAdaptiveHelpHints({
+      profile,
+      features,
+      helpHints,
+      graphRecommendations,
+      context: {
+        contextId: 'feature-learning-modules-catalog',
+        featureId: 'feature-learning-modules-catalog',
+        toolId: 'tool-learning-modules-search',
+        tags: ['learning', 'search', 'filters'],
+        relatedAssetIds: ['tutorial-learning-modules-search'],
+      },
+    })[0] ?? null
+  );
 }
 
 function buildBanner(
@@ -96,6 +140,17 @@ function buildBanner(
 export function buildAdaptiveLearningCatalogViewModel(runtime: AdaptiveLearningCatalogRuntime): AdaptiveLearningCatalogViewModel {
   return {
     ...runtime,
+    contextualHelpHint: runtime.contextualHelpHint
+      ? {
+          assetId: runtime.contextualHelpHint.asset.id,
+          title: runtime.contextualHelpHint.asset.title,
+          description: runtime.contextualHelpHint.asset.description,
+          body: runtime.contextualHelpHint.reasons[0] ?? runtime.contextualHelpHint.asset.description,
+          reasons: runtime.contextualHelpHint.reasons,
+          graphReasons: runtime.contextualHelpHint.graphReasons,
+          availabilityState: runtime.contextualHelpHint.governanceDecision.availabilityState,
+        }
+      : null,
     cards: runtime.recommendationResult.recommendations.map((recommendation) => ({
       assetId: recommendation.asset.id,
       title: recommendation.asset.title,
@@ -132,6 +187,7 @@ export function buildAdaptiveLearningCatalogRuntime({
     graphRecommendations,
     limit: 3,
   });
+  const contextualHelpHint = buildCatalogContextualHelpHint(profile, features, learningAssets, graphRecommendations);
 
   return {
     hasLearnerProfile,
@@ -139,6 +195,7 @@ export function buildAdaptiveLearningCatalogRuntime({
     learnerProfile: profile,
     banner: buildBanner(hasLearnerProfile, graphRecommendations.length > 0, recommendationResult),
     recommendationResult,
+    contextualHelpHint,
   };
 }
 

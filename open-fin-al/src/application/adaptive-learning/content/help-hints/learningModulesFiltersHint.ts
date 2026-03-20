@@ -30,6 +30,23 @@ export const learningModulesFiltersHint = registerAdaptiveLearningContent(
     },
     supportedModalities: ['reference'],
     hintForAssetId: 'feature-learning-modules-catalog',
+    contextualGuidance: {
+      contextIds: ['feature-learning-modules-catalog', 'tool-learning-modules-search', 'tool-learning-modules-filter'],
+      exposureRules: [
+        {
+          type: 'knowledge-level-at-most',
+          knowledgeLevel: 'intermediate',
+        },
+      ],
+      suppressionRules: [
+        {
+          type: 'completed-asset',
+          assetId: 'tutorial-learning-modules-search',
+        },
+      ],
+      displayPriority: 8,
+      maxDisplayCount: 3,
+    },
     recommendedNextSteps: [
       {
         assetId: 'module-investing-basics',

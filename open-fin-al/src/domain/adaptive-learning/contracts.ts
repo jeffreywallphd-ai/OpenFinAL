@@ -166,10 +166,19 @@ export interface TutorialMetadata extends AdaptiveLearningContentMetadataBase {
   tutorialForAssetId?: string;
 }
 
+export interface AdaptiveHelpHintContextualGuidance {
+  contextIds: string[];
+  exposureRules?: AdaptivePolicyCondition[];
+  suppressionRules?: AdaptivePolicyCondition[];
+  displayPriority?: number;
+  maxDisplayCount?: number;
+}
+
 export interface HelpHintMetadata extends AdaptiveLearningContentMetadataBase {
   kind: 'help-hint';
   category: LearningCategory;
   hintForAssetId?: string;
+  contextualGuidance?: AdaptiveHelpHintContextualGuidance;
 }
 
 export type AdaptiveAssetMetadata =
@@ -287,6 +296,14 @@ export interface AdaptiveAssetSelector {
   kinds?: AdaptiveAssetKind[];
   categories?: AdaptiveCategory[];
   tags?: string[];
+}
+
+export interface AdaptiveHelpHintContext {
+  contextId: string;
+  featureId?: string;
+  toolId?: string;
+  tags?: string[];
+  relatedAssetIds?: string[];
 }
 
 export type AdaptivePolicyCondition =
